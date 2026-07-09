@@ -125,6 +125,27 @@
                 color: #ffb4ab;
                 white-space: pre-wrap;
             }
+            .streaming-sources-player {
+                position: fixed;
+                inset: 0;
+                z-index: 100000;
+                background: #000;
+                display: grid;
+                grid-template-rows: auto 1fr;
+            }
+            .streaming-sources-player-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: .75rem 1rem;
+                background: rgba(0,0,0,.82);
+            }
+            .streaming-sources-video {
+                width: 100%;
+                height: 100%;
+                background: #000;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -355,6 +376,82 @@
         });
     }
 
+    async function tryJellyfinPlayback(item, streamingUrl) {
+        const playbackManager = window.PlaybackManager || window.playbackManager;
+        debug('Playback globals', {
+            hasPlaybackManager: Boolean(playbackManager),
+            playbackMethods: playbackManager ? Object.keys(playbackManager).filter(key => typeof playbackManager[key] === 'function') : []
+        });
+
+        if (!playbackManager || typeof playbackManager.play !== 'function') {
+            return false;
+        }
+
+        const mediaSourceId = `streaming-sources-${item.Id || getItemId()}`;
+        const remoteItem = Object.assign({}, item, {
+            MediaSources: [{
+                Id: mediaSourceId,
+                Name: 'Streaming Sources',
+                Path: streamingUrl,
+                Protocol: 'Http',
+                Type: 'Default',
+                IsRemote: true,
+                SupportsDirectPlay: true,
+                SupportsDirectStream: true,
+                SupportsTranscoding: false,
+                RunTimeTicks: item.RunTimeTicks || null,
+                MediaStreams: item.MediaStreams || []
+            }]
+        });
+
+        try {
+            await playbackManager.play({
+                items: [remoteItem],
+                mediaSourceId,
+                startPositionTicks: 0
+            });
+            return true;
+        } catch (error) {
+            console.warn(debugPrefix, 'Jellyfin PlaybackManager refused the external source', error);
+            return false;
+        }
+    }
+
+    function playInEmbeddedPlayer(item, streamingUrl) {
+        document.getElementById('streamingSourcesPlayer')?.remove();
+
+        const player = document.createElement('div');
+        player.id = 'streamingSourcesPlayer';
+        player.className = 'streaming-sources-player';
+
+        const bar = document.createElement('div');
+        bar.className = 'streaming-sources-player-bar';
+
+        const title = document.createElement('div');
+        title.textContent = item.Name || item.SeriesName || 'Streaming Sources';
+
+        const close = jellyfinButton('Fermer', 'emby-button');
+        close.addEventListener('click', () => {
+            video.pause();
+            player.remove();
+        });
+
+        const video = document.createElement('video');
+        video.className = 'streaming-sources-video';
+        video.src = streamingUrl;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+
+        bar.append(title, close);
+        player.append(bar, video);
+        document.body.appendChild(player);
+
+        video.play().catch(error => {
+            console.warn(debugPrefix, 'Embedded player autoplay failed', error);
+        });
+    }
+
     async function resolveSource(itemId, source, forceRefresh) {
         showMessage('Streaming Sources', 'Mise en cache Debrid et recuperation du lien...');
         const response = await jellyfinFetch('/StreamingSources/Resolve', {
@@ -373,7 +470,12 @@
             throw new Error('Aucune URL de streaming retournee.');
         }
 
-        window.location.href = streamingUrl;
+        const item = await getItem(itemId);
+        if (await tryJellyfinPlayback(item, streamingUrl)) {
+            return;
+        }
+
+        playInEmbeddedPlayer(item, streamingUrl);
     }
 
     function showSources(item, sources) {
