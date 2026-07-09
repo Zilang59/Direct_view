@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.9",
-        "changelog": "Restrict File Transformation injection to the root index.html and guard non-HTML files.",
+        "version": "0.2.10",
+        "changelog": "Allow File Transformation to match Jellyfin index.html paths while still avoiding JavaScript chunks.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.9.zip",
-        "checksum": "b32c8ebaa549d26d3801def3d2e87f62",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.10.zip",
+        "checksum": "23625c84ee6f6515c1e4b1c3ddc39690",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.9.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.10.zip"
       }
     ]
   }

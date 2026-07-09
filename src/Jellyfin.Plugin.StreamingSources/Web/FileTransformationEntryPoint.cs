@@ -74,7 +74,7 @@ public sealed class FileTransformationEntryPoint : IHostedService
             var payload = new JObject
             {
                 ["id"] = "6e2be09d-745f-4a25-bcb3-3ca2ab309454",
-                ["fileNamePattern"] = "^index\\.html$",
+                ["fileNamePattern"] = "(^|[\\\\/])index\\.html$",
                 ["callbackAssembly"] = typeof(WebIndexTransformer).Assembly.FullName,
                 ["callbackClass"] = typeof(WebIndexTransformer).FullName,
                 ["callbackMethod"] = nameof(WebIndexTransformer.InjectClientScript)
