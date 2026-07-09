@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.14",
-        "changelog": "Improve Stremio/Lumio source metadata extraction and accept PascalCase resolved stream URLs.",
+        "version": "0.2.15",
+        "changelog": "Rollback risky Lumio metadata parsing while keeping PascalCase resolved stream URL support.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.14.zip",
-        "checksum": "56a81331bafe060cc7f50a8206a756b9",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.15.zip",
+        "checksum": "362a22ffbc955182f713a1c56dba8453",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.14.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.15.zip"
       }
     ]
   }

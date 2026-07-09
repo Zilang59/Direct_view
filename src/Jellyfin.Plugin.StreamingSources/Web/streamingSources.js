@@ -401,21 +401,11 @@
                     source.quality || source.Quality,
                     source.language || source.Language,
                     source.codec || source.Codec,
-                    source.provider || source.Provider,
-                    source.directUrl || source.DirectUrl ? 'lien direct' : 'Debrid',
                     formatSize(source.sizeBytes || source.SizeBytes),
                     `${source.seeders || source.Seeders || 0} seeders`
                 ].filter(Boolean).join(' | ');
 
                 content.append(name, meta);
-
-                const description = source.description || source.Description;
-                if (description) {
-                    const details = document.createElement('div');
-                    details.className = 'streaming-source-meta';
-                    details.textContent = description;
-                    content.appendChild(details);
-                }
 
                 const play = jellyfinButton('Lire', 'raised button-submit emby-button');
                 play.addEventListener('click', async () => {
@@ -447,8 +437,7 @@
             hash: source.hash || source.Hash || '',
             magnet: source.magnet || source.Magnet || '',
             directUrl: source.directUrl || source.DirectUrl || '',
-            provider: source.provider || source.Provider || '',
-            description: source.description || source.Description || ''
+            provider: source.provider || source.Provider || ''
         };
     }
 
