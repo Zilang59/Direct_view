@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 using Jellyfin.Plugin.StreamingSources.Models;
 using Microsoft.Extensions.Logging;
@@ -170,22 +171,43 @@ public sealed class ExternalSourceClient : IExternalSourceClient
             return null;
         }
 
-        var title = FirstNonEmpty(stream.Title, stream.Name, "Stremio source");
+        var description = FirstNonEmpty(stream.Description, stream.BehaviorHints?.Filename, stream.Title, stream.Name);
+        var title = BuildStremioTitle(stream, description);
+        var sizeBytes = stream.BehaviorHints?.VideoSize ?? GuessSizeBytes(description);
+        var isWebReady = stream.BehaviorHints?.NotWebReady != true;
+
         return new StreamingSource
         {
             Name = title,
-            SizeBytes = 0,
+            SizeBytes = sizeBytes,
             Seeders = 0,
-            Language = GuessLanguage(title),
-            Quality = GuessQuality(title),
-            Codec = GuessCodec(title),
-            IsHdr = title.Contains("HDR", StringComparison.OrdinalIgnoreCase),
-            IsDolbyVision = title.Contains("DV", StringComparison.OrdinalIgnoreCase) || title.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase),
+            Language = GuessLanguage(description),
+            Quality = GuessQuality(description),
+            Codec = GuessCodec(description),
+            IsHdr = description.Contains("HDR", StringComparison.OrdinalIgnoreCase),
+            IsDolbyVision = description.Contains("DV", StringComparison.OrdinalIgnoreCase) || description.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase),
             Hash = hash,
             Magnet = magnet,
             DirectUrl = directUrl.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase) ? string.Empty : directUrl,
-            Provider = manifestUrl.Host
+            Provider = manifestUrl.Host,
+            Description = description,
+            IsWebReady = isWebReady
         };
+    }
+
+    private static string BuildStremioTitle(StremioStream stream, string description)
+    {
+        var parts = new[]
+        {
+            stream.Name,
+            GuessQuality(description),
+            GuessLanguage(description),
+            GuessCodec(description),
+            GuessReleaseType(description)
+        };
+
+        var title = string.Join(" - ", parts.Where(value => !string.IsNullOrWhiteSpace(value)).Distinct(StringComparer.OrdinalIgnoreCase));
+        return string.IsNullOrWhiteSpace(title) ? FirstNonEmpty(stream.Title, stream.Name, "Stremio source") : title;
     }
 
     private static string FirstNonEmpty(params string?[] values)
@@ -251,6 +273,33 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         return string.Empty;
     }
 
+    private static string GuessReleaseType(string title)
+    {
+        foreach (var type in new[] { "REMUX", "BluRay", "WEB-DL", "WEBRip", "HDTV" })
+        {
+            if (title.Contains(type, StringComparison.OrdinalIgnoreCase))
+            {
+                return type;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static long GuessSizeBytes(string title)
+    {
+        var match = Regex.Match(title, @"(\d+(?:[\.,]\d+)?)\s*(Go|GB|GiB|Mo|MB|MiB)", RegexOptions.IgnoreCase);
+        if (!match.Success ||
+            !double.TryParse(match.Groups[1].Value.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+        {
+            return 0;
+        }
+
+        var unit = match.Groups[2].Value.ToLowerInvariant();
+        var multiplier = unit is "mo" or "mb" or "mib" ? 1024L * 1024L : 1024L * 1024L * 1024L;
+        return (long)(value * multiplier);
+    }
+
     private sealed class StremioStreamResponse
     {
         [JsonPropertyName("streams")]
@@ -265,6 +314,9 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         [JsonPropertyName("title")]
         public string? Title { get; set; }
 
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
         [JsonPropertyName("url")]
         public string? Url { get; set; }
 
@@ -273,5 +325,20 @@ public sealed class ExternalSourceClient : IExternalSourceClient
 
         [JsonPropertyName("infoHash")]
         public string? InfoHash { get; set; }
+
+        [JsonPropertyName("behaviorHints")]
+        public StremioBehaviorHints? BehaviorHints { get; set; }
+    }
+
+    private sealed class StremioBehaviorHints
+    {
+        [JsonPropertyName("videoSize")]
+        public long? VideoSize { get; set; }
+
+        [JsonPropertyName("filename")]
+        public string? Filename { get; set; }
+
+        [JsonPropertyName("notWebReady")]
+        public bool? NotWebReady { get; set; }
     }
 }

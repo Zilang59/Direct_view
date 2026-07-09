@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.17",
-        "changelog": "Add guarded Sources button injection with fallback placement and keep in-page playback handling.",
+        "version": "0.2.18",
+        "changelog": "Parse real Lumio/Stremio description and behaviorHints metadata for quality, size, language, codec, and web-readiness display.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.17.zip",
-        "checksum": "27a4e4560ecd3ac12dd30582792ed78b",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.18.zip",
+        "checksum": "39a5a0ac49cea83a63e8c38e2b2d61ec",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.17.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.18.zip"
       }
     ]
   }
