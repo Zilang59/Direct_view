@@ -5,6 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
+    const scriptVersion = '0.2.23';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -762,7 +763,7 @@
     }
 
     ensureStyles();
-    debug('Client script loaded');
+    debug('Client script loaded', { version: scriptVersion });
     observeNavigation();
     setTimeout(injectButton, 500);
 })();
