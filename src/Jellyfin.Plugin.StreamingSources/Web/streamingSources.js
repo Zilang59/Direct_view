@@ -32,6 +32,13 @@
             .streaming-sources-button {
                 margin-left: .5em;
             }
+            .streaming-sources-floating-button {
+                position: fixed;
+                right: 1.25rem;
+                bottom: 1.25rem;
+                z-index: 9999;
+                box-shadow: 0 8px 24px rgba(0,0,0,.35);
+            }
             .streaming-sources-overlay {
                 position: fixed;
                 inset: 0;
@@ -100,8 +107,13 @@
     function findButtonContainer() {
         return document.querySelector('.mainDetailButtons') ||
             document.querySelector('.detailButtonContainer') ||
+            document.querySelector('.detailButtons') ||
+            document.querySelector('.itemDetailButtons') ||
+            document.querySelector('.detailPagePrimaryContainer .buttons') ||
             document.querySelector('.itemDetailPage .buttons') ||
-            document.querySelector('[data-role="content"]');
+            document.querySelector('.detailPageContent .buttons') ||
+            document.querySelector('.detailPageWrapper .buttons') ||
+            document.body;
     }
 
     function formatSize(bytes) {
@@ -330,7 +342,11 @@
             return;
         }
 
-        const button = jellyfinButton('Sources', 'raised button-submit emby-button streaming-sources-button');
+        const className = container === document.body
+            ? 'raised button-submit emby-button streaming-sources-button streaming-sources-floating-button'
+            : 'raised button-submit emby-button streaming-sources-button';
+
+        const button = jellyfinButton('Sources', className);
         button.id = buttonId;
         button.addEventListener('click', onSourcesClick);
         container.appendChild(button);

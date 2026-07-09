@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.1",
-        "changelog": "Inject the Sources button into Jellyfin Web through the File Transformation plugin.",
+        "version": "0.2.3",
+        "changelog": "Align plugin assembly version and add a fallback Sources button in Jellyfin Web.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.1.zip",
-        "checksum": "e95f7227b52371f468c03fc66829d17b",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.3.zip",
+        "checksum": "5d2417509d276f8f52b674e74d8918e9",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.1.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.3.zip"
       }
     ]
   }
