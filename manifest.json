@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.31",
-        "changelog": "Continue to the Jellyfin transcoded fallback when the native PlayMediaSource command is accepted but does not open the web player.",
+        "version": "0.2.32",
+        "changelog": "Add custom VOD controls for the Jellyfin transcoded fallback, including duration display and seek via StartTimeTicks.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.31.zip",
-        "checksum": "f42cf27bf7cd691fd34cecce6326c243",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.32.zip",
+        "checksum": "0065ddad16d9def9dd48fe35634de8f9",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.31.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.32.zip"
       }
     ]
   }

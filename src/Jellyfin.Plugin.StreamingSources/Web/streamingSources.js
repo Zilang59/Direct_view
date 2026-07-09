@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.31';
+    const scriptVersion = '0.2.32';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -147,7 +147,7 @@
                 z-index: 100000;
                 background: #000;
                 display: grid;
-                grid-template-rows: auto 1fr;
+                grid-template-rows: auto 1fr auto;
             }
             .streaming-sources-player-bar {
                 display: flex;
@@ -161,6 +161,23 @@
                 width: 100%;
                 height: 100%;
                 background: #000;
+            }
+            .streaming-sources-controls {
+                display: grid;
+                grid-template-columns: auto auto 1fr auto;
+                gap: .75rem;
+                align-items: center;
+                padding: .65rem 1rem 1rem;
+                background: rgba(0,0,0,.9);
+            }
+            .streaming-sources-seek {
+                width: 100%;
+            }
+            .streaming-sources-time {
+                min-width: 11rem;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+                opacity: .9;
             }
         `;
         document.head.appendChild(style);
@@ -653,12 +670,13 @@
         return true;
     }
 
-    function buildJellyfinTranscodedStreamUrl(itemId, mediaSourceId, playSessionId) {
+    function buildJellyfinTranscodedStreamUrl(itemId, mediaSourceId, playSessionId, startTimeTicks) {
         const client = apiClient();
         const params = {
             Static: 'false',
             MediaSourceId: mediaSourceId,
             PlaySessionId: playSessionId || '',
+            StartTimeTicks: String(startTimeTicks || 0),
             VideoCodec: 'h264',
             AudioCodec: 'aac',
             AudioBitrate: '384000',
@@ -673,6 +691,19 @@
         };
 
         return client.getUrl(`/Videos/${itemId}/stream.mp4`, params);
+    }
+
+    function formatTime(totalSeconds) {
+        const seconds = Math.max(0, Math.floor(totalSeconds || 0));
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
     }
 
     async function reportEmbeddedPlaybackStart(item, mediaSourceId, playSessionId) {
@@ -744,13 +775,57 @@
         video.autoplay = true;
         video.playsInline = true;
 
+        const runtimeTicks = item.RunTimeTicks || 0;
+        const runtimeSeconds = Math.floor(runtimeTicks / 10000000);
+        let streamStartTicks = item.UserData?.PlaybackPositionTicks || 0;
+        let isSeeking = false;
         let progressTimer = 0;
-        const ticksFromVideo = () => Math.floor((video.currentTime || 0) * 10000000);
+        const ticksFromVideo = () => streamStartTicks + Math.floor((video.currentTime || 0) * 10000000);
         const stopProgressTimer = () => {
             if (progressTimer) {
                 clearInterval(progressTimer);
                 progressTimer = 0;
             }
+        };
+
+        const controls = document.createElement('div');
+        controls.className = 'streaming-sources-controls';
+
+        const back = jellyfinButton('-30s', 'emby-button');
+        const forward = jellyfinButton('+30s', 'emby-button');
+        const seek = document.createElement('input');
+        seek.type = 'range';
+        seek.className = 'streaming-sources-seek';
+        seek.min = '0';
+        seek.max = String(runtimeSeconds || 1);
+        seek.step = '1';
+        seek.value = String(Math.floor(streamStartTicks / 10000000));
+
+        const time = document.createElement('div');
+        time.className = 'streaming-sources-time';
+
+        const updateControls = () => {
+            const currentSeconds = Math.floor(ticksFromVideo() / 10000000);
+            if (!isSeeking) {
+                seek.value = String(Math.min(currentSeconds, runtimeSeconds || currentSeconds));
+            }
+
+            time.textContent = `${formatTime(currentSeconds)} / ${runtimeSeconds ? formatTime(runtimeSeconds) : '--:--'}`;
+        };
+
+        const seekToTicks = targetTicks => {
+            const boundedTicks = runtimeTicks
+                ? Math.max(0, Math.min(targetTicks, runtimeTicks - 10000000))
+                : Math.max(0, targetTicks);
+            streamStartTicks = boundedTicks;
+            video.src = buildJellyfinTranscodedStreamUrl(item.Id || getItemId(), mediaSourceId, playSessionId, streamStartTicks);
+            updateControls();
+            video.play().catch(error => {
+                console.warn(debugPrefix, 'Embedded player seek play failed', error);
+            });
+            reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, streamStartTicks, false).catch(error => {
+                console.warn(debugPrefix, 'Embedded playback seek report failed', error);
+            });
         };
 
         const close = jellyfinButton('Fermer', 'emby-button');
@@ -763,8 +838,20 @@
             player.remove();
         });
 
+        back.addEventListener('click', () => seekToTicks(ticksFromVideo() - 300000000));
+        forward.addEventListener('click', () => seekToTicks(ticksFromVideo() + 300000000));
+        seek.addEventListener('input', () => {
+            isSeeking = true;
+            time.textContent = `${formatTime(Number(seek.value))} / ${runtimeSeconds ? formatTime(runtimeSeconds) : '--:--'}`;
+        });
+        seek.addEventListener('change', () => {
+            isSeeking = false;
+            seekToTicks(Number(seek.value) * 10000000);
+        });
+
+        controls.append(back, forward, seek, time);
         bar.append(title, close);
-        player.append(bar, video);
+        player.append(bar, video, controls);
         document.body.appendChild(player);
 
         video.addEventListener('play', () => {
@@ -774,11 +861,14 @@
 
             stopProgressTimer();
             progressTimer = setInterval(() => {
+                updateControls();
                 reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, ticksFromVideo(), video.paused).catch(error => {
                     console.warn(debugPrefix, 'Embedded playback progress report failed', error);
                 });
             }, 10000);
         }, { once: true });
+
+        video.addEventListener('timeupdate', updateControls);
 
         video.addEventListener('pause', () => {
             reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, ticksFromVideo(), true).catch(error => {
@@ -796,6 +886,7 @@
         video.play().catch(error => {
             console.warn(debugPrefix, 'Embedded player autoplay failed', error);
         });
+        updateControls();
     }
 
     async function resolveSource(itemId, source, forceRefresh) {
@@ -844,7 +935,8 @@
         const jellyfinStreamUrl = buildJellyfinTranscodedStreamUrl(
             itemId,
             expectedMediaSourceId,
-            selectedPlaybackInfo?.PlaySessionId || selectedPlaybackInfo?.playSessionId || ''
+            selectedPlaybackInfo?.PlaySessionId || selectedPlaybackInfo?.playSessionId || '',
+            item.UserData?.PlaybackPositionTicks || 0
         );
         debug('Using Jellyfin transcoded fallback stream', {
             mediaSourceId: expectedMediaSourceId,
