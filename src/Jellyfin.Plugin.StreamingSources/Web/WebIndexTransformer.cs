@@ -16,14 +16,14 @@ public static class WebIndexTransformer
         string contents = ExtractContents(payload);
         if (string.IsNullOrWhiteSpace(contents) || contents.Contains(Marker, StringComparison.OrdinalIgnoreCase))
         {
-            return new { contents };
+            return contents;
         }
 
         string updated = contents.Contains("</body>", StringComparison.OrdinalIgnoreCase)
             ? ReplaceLastIgnoreCase(contents, "</body>", ScriptTag + "</body>")
             : contents + ScriptTag;
 
-        return new { contents = updated };
+        return updated;
     }
 
     private static string ExtractContents(object payload)
