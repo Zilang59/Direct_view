@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.18",
-        "changelog": "Parse real Lumio/Stremio description and behaviorHints metadata for quality, size, language, codec, and web-readiness display.",
+        "version": "0.2.19",
+        "changelog": "Make Sources button resilient after hard refresh and treat MaxResults=0 as unlimited source results.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.18.zip",
-        "checksum": "39a5a0ac49cea83a63e8c38e2b2d61ec",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.19.zip",
+        "checksum": "7ad602e11141679266da9f5e8806467e",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.18.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.19.zip"
       }
     ]
   }

@@ -35,12 +35,17 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         }
 
         var filteredSources = sources
-            .Where(source => configuration.MaxSizeGb <= 0 || source.SizeBytes <= configuration.MaxSizeGb * 1024L * 1024L * 1024L)
-            .Take(Math.Max(1, configuration.MaxResults))
-            .ToArray();
+            .Where(source => configuration.MaxSizeGb <= 0 || source.SizeBytes <= 0 || source.SizeBytes <= configuration.MaxSizeGb * 1024L * 1024L * 1024L);
 
-        _logger.LogInformation("Source search returned {SourceCount} source(s).", filteredSources.Length);
-        return filteredSources;
+        if (configuration.MaxResults > 0)
+        {
+            filteredSources = filteredSources.Take(configuration.MaxResults);
+        }
+
+        var sourceArray = filteredSources.ToArray();
+
+        _logger.LogInformation("Source search returned {SourceCount} source(s) from {RawSourceCount} raw source(s).", sourceArray.Length, sources.Count);
+        return sourceArray;
     }
 
     private async Task<IReadOnlyList<StreamingSource>> SearchExternalApiAsync(

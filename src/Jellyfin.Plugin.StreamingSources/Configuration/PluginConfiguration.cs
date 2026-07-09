@@ -45,7 +45,7 @@ public class PluginConfiguration : BasePluginConfiguration
     /// <summary>
     /// Gets or sets the maximum number of results to display.
     /// </summary>
-    public int MaxResults { get; set; } = 25;
+    public int MaxResults { get; set; }
 
     /// <summary>
     /// Gets or sets the default sort key.

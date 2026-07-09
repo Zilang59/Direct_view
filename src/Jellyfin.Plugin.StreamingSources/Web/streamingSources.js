@@ -199,6 +199,27 @@
             document.body;
     }
 
+    function isElementVisible(element) {
+        if (!element || !document.body.contains(element)) {
+            return false;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const style = window.getComputedStyle(element);
+        return rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            Number(style.opacity || '1') > 0;
+    }
+
+    function moveButtonToFallback(button) {
+        button.className = 'raised button-submit emby-button streaming-sources-button streaming-sources-floating-button';
+        button.innerHTML = '<span>Sources</span>';
+        document.body.appendChild(button);
+        debug('Sources button moved to floating fallback', { href: window.location.href });
+    }
+
     function formatSize(bytes) {
         if (!bytes) {
             return 'taille inconnue';
@@ -611,6 +632,13 @@
                 fallback: container === document.body,
                 href: window.location.href
             });
+
+            setTimeout(() => {
+                const currentButton = document.getElementById(buttonId);
+                if (isDetailPage() && currentButton && !isElementVisible(currentButton)) {
+                    moveButtonToFallback(currentButton);
+                }
+            }, 1200);
         } catch (error) {
             console.error(debugPrefix, 'Failed to inject Sources button', error);
         }
@@ -625,6 +653,13 @@
 
             injectButton();
         }, 1000);
+
+        const observer = new MutationObserver(() => {
+            if (isDetailPage() && !document.getElementById(buttonId)) {
+                injectButton();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     ensureStyles();
