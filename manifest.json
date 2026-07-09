@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.19",
-        "changelog": "Make Sources button resilient after hard refresh and treat MaxResults=0 as unlimited source results.",
+        "version": "0.2.20",
+        "changelog": "Register cached Debrid URLs as Jellyfin media sources and trigger native Jellyfin playback after source selection.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.19.zip",
-        "checksum": "7ad602e11141679266da9f5e8806467e",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.20.zip",
+        "checksum": "b523fe5b07013e4ffd56ab1fd252995e",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.19.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.20.zip"
       }
     ]
   }

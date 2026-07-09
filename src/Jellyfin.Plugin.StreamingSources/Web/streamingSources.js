@@ -438,6 +438,17 @@
         }
     }
 
+    function triggerNativePlayback() {
+        const playButton = findPlayButton();
+        if (!playButton) {
+            return false;
+        }
+
+        debug('Triggering Jellyfin native play button');
+        playButton.click();
+        return true;
+    }
+
     function playInEmbeddedPlayer(item, streamingUrl) {
         document.getElementById('streamingSourcesPlayer')?.remove();
 
@@ -493,6 +504,10 @@
 
         const item = await getItem(itemId);
         if (await tryJellyfinPlayback(item, streamingUrl)) {
+            return;
+        }
+
+        if (triggerNativePlayback()) {
             return;
         }
 
