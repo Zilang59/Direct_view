@@ -32,6 +32,14 @@
             .streaming-sources-button {
                 margin-left: .5em;
             }
+            .streaming-sources-icon-button {
+                min-width: 3.2em;
+            }
+            .streaming-sources-icon-button .material-icons,
+            .streaming-sources-icon-button .material-icons-round {
+                font-size: 1.75em;
+                line-height: 1;
+            }
             .streaming-sources-floating-button {
                 position: fixed;
                 right: 1.25rem;
@@ -104,7 +112,36 @@
         return button;
     }
 
+    function jellyfinIconButton(icon, label) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'emby-button detailButton streaming-sources-button streaming-sources-icon-button';
+        button.title = label;
+        button.setAttribute('aria-label', label);
+        button.innerHTML = `<span class="material-icons" aria-hidden="true">${icon}</span>`;
+        return button;
+    }
+
+    function findPlayButton() {
+        const candidates = Array.from(document.querySelectorAll('button, .emby-button'));
+        return candidates.find(button => {
+            const label = [
+                button.getAttribute('title'),
+                button.getAttribute('aria-label'),
+                button.textContent,
+                button.className
+            ].filter(Boolean).join(' ').toLowerCase();
+
+            return /\b(play|lecture|resume|reprendre|btnplay)\b/.test(label);
+        }) || null;
+    }
+
     function findButtonContainer() {
+        const playButton = findPlayButton();
+        if (playButton?.parentElement) {
+            return playButton.parentElement;
+        }
+
         return document.querySelector('.mainDetailButtons') ||
             document.querySelector('.detailButtonContainer') ||
             document.querySelector('.detailButtons') ||
@@ -122,6 +159,36 @@
         }
 
         return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} Go`;
+    }
+
+    function normalizeSourcesResponse(response) {
+        if (!response) {
+            return [];
+        }
+
+        if (typeof response === 'string') {
+            try {
+                return normalizeSourcesResponse(JSON.parse(response));
+            } catch {
+                throw new Error(response);
+            }
+        }
+
+        if (Array.isArray(response)) {
+            return response;
+        }
+
+        for (const key of ['sources', 'Sources', 'items', 'Items', 'results', 'Results', 'streams', 'Streams']) {
+            if (Array.isArray(response[key])) {
+                return response[key];
+            }
+        }
+
+        if (response.source || response.Source || response.name || response.Name) {
+            return [response.source || response.Source || response];
+        }
+
+        throw new Error('Format de reponse sources inattendu.');
     }
 
     async function jellyfinFetch(path, options) {
@@ -321,7 +388,7 @@
                 body: lookup
             });
 
-            showSources(item, sources);
+            showSources(item, normalizeSourcesResponse(sources));
         } catch (error) {
             showMessage('Erreur', error.message || String(error), true);
         }
@@ -342,14 +409,23 @@
             return;
         }
 
+        const playButton = findPlayButton();
         const className = container === document.body
             ? 'raised button-submit emby-button streaming-sources-button streaming-sources-floating-button'
             : 'raised button-submit emby-button streaming-sources-button';
 
-        const button = jellyfinButton('Sources', className);
+        const button = container === document.body
+            ? jellyfinButton('Sources', className)
+            : jellyfinIconButton('source', 'Sources');
+
         button.id = buttonId;
         button.addEventListener('click', onSourcesClick);
-        container.appendChild(button);
+
+        if (playButton?.parentElement === container) {
+            playButton.insertAdjacentElement('afterend', button);
+        } else {
+            container.appendChild(button);
+        }
     }
 
     function observeNavigation() {
