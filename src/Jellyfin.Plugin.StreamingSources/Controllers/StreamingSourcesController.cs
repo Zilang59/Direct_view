@@ -123,6 +123,10 @@ public sealed class StreamingSourcesController : ControllerBase
     [AllowAnonymous]
     public IActionResult GetClientScript()
     {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        Response.Headers.Pragma = "no-cache";
+        Response.Headers.Expires = "0";
+
         var assembly = Assembly.GetExecutingAssembly();
         const string resourceName = "Jellyfin.Plugin.StreamingSources.Web.streamingSources.js";
 

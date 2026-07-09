@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.23';
+    const scriptVersion = '0.2.24';
     let lastUrl = '';
 
     function debug(message, data) {

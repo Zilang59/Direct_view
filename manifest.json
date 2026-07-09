@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.23",
-        "changelog": "Add client script version logging to verify that Jellyfin serves the updated Streaming Sources frontend.",
+        "version": "0.2.24",
+        "changelog": "Bust Jellyfin web client cache by injecting a versioned script URL and serving the client script with no-store headers.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.23.zip",
-        "checksum": "d70bdced5051d13441d1a8e51807f8d3",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.24.zip",
+        "checksum": "a9c25087428bee6271669a89aa8e04e6",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.23.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.24.zip"
       }
     ]
   }

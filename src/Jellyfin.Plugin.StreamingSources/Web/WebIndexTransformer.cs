@@ -9,7 +9,6 @@ namespace Jellyfin.Plugin.StreamingSources.Web;
 public static class WebIndexTransformer
 {
     private const string Marker = "streaming-sources-client-loader";
-    private const string ScriptTag = "<script id=\"streaming-sources-client-loader\" src=\"/StreamingSources/Web/streamingSources.js\" defer></script>";
 
     public static object InjectClientScript(object payload)
     {
@@ -25,9 +24,10 @@ public static class WebIndexTransformer
             return contents;
         }
 
+        string scriptTag = $"<script id=\"streaming-sources-client-loader\" src=\"/StreamingSources/Web/streamingSources.js?v={PluginVersion.Current}\" defer></script>";
         string updated = contents.Contains("</body>", StringComparison.OrdinalIgnoreCase)
-            ? ReplaceLastIgnoreCase(contents, "</body>", ScriptTag + "</body>")
-            : contents + ScriptTag;
+            ? ReplaceLastIgnoreCase(contents, "</body>", scriptTag + "</body>")
+            : contents + scriptTag;
 
         return updated;
     }
