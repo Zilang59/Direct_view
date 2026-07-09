@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.29';
+    const scriptVersion = '0.2.30';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -652,7 +652,78 @@
         return true;
     }
 
-    function playInEmbeddedPlayer(item, streamingUrl) {
+    function buildJellyfinTranscodedStreamUrl(itemId, mediaSourceId, playSessionId) {
+        const client = apiClient();
+        const params = {
+            Static: 'false',
+            MediaSourceId: mediaSourceId,
+            PlaySessionId: playSessionId || '',
+            VideoCodec: 'h264',
+            AudioCodec: 'aac',
+            AudioBitrate: '384000',
+            VideoBitrate: '120000000',
+            MaxAudioChannels: '2',
+            TranscodingMaxAudioChannels: '2',
+            RequireAvc: 'true',
+            SegmentContainer: 'mp4',
+            EnableAudioVbrEncoding: 'true',
+            AllowVideoStreamCopy: 'true',
+            AllowAudioStreamCopy: 'false'
+        };
+
+        return client.getUrl(`/Videos/${itemId}/stream.mp4`, params);
+    }
+
+    async function reportEmbeddedPlaybackStart(item, mediaSourceId, playSessionId) {
+        const client = apiClient();
+        if (!client || typeof client.reportPlaybackStart !== 'function') {
+            return;
+        }
+
+        await client.reportPlaybackStart({
+            ItemId: item.Id || getItemId(),
+            MediaSourceId: mediaSourceId,
+            PlaySessionId: playSessionId || '',
+            CanSeek: true,
+            IsPaused: false,
+            IsMuted: false,
+            PositionTicks: item.UserData?.PlaybackPositionTicks || 0,
+            PlaybackStartTimeTicks: Date.now() * 10000
+        });
+    }
+
+    async function reportEmbeddedPlaybackStopped(item, mediaSourceId, playSessionId, positionTicks) {
+        const client = apiClient();
+        if (!client || typeof client.reportPlaybackStopped !== 'function') {
+            return;
+        }
+
+        await client.reportPlaybackStopped({
+            ItemId: item.Id || getItemId(),
+            MediaSourceId: mediaSourceId,
+            PlaySessionId: playSessionId || '',
+            PositionTicks: positionTicks || 0
+        });
+    }
+
+    async function reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, positionTicks, isPaused) {
+        const client = apiClient();
+        if (!client || typeof client.reportPlaybackProgress !== 'function') {
+            return;
+        }
+
+        await client.reportPlaybackProgress({
+            ItemId: item.Id || getItemId(),
+            MediaSourceId: mediaSourceId,
+            PlaySessionId: playSessionId || '',
+            PositionTicks: positionTicks || 0,
+            IsPaused: Boolean(isPaused),
+            IsMuted: false,
+            EventName: isPaused ? 'pause' : 'timeupdate'
+        });
+    }
+
+    function playInEmbeddedPlayer(item, streamingUrl, mediaSourceId, playSessionId) {
         document.getElementById('streamingSourcesPlayer')?.remove();
 
         const player = document.createElement('div');
@@ -672,15 +743,54 @@
         video.autoplay = true;
         video.playsInline = true;
 
+        let progressTimer = 0;
+        const ticksFromVideo = () => Math.floor((video.currentTime || 0) * 10000000);
+        const stopProgressTimer = () => {
+            if (progressTimer) {
+                clearInterval(progressTimer);
+                progressTimer = 0;
+            }
+        };
+
         const close = jellyfinButton('Fermer', 'emby-button');
         close.addEventListener('click', () => {
             video.pause();
+            stopProgressTimer();
+            reportEmbeddedPlaybackStopped(item, mediaSourceId, playSessionId, ticksFromVideo()).catch(error => {
+                console.warn(debugPrefix, 'Embedded playback stop report failed', error);
+            });
             player.remove();
         });
 
         bar.append(title, close);
         player.append(bar, video);
         document.body.appendChild(player);
+
+        video.addEventListener('play', () => {
+            reportEmbeddedPlaybackStart(item, mediaSourceId, playSessionId).catch(error => {
+                console.warn(debugPrefix, 'Embedded playback start report failed', error);
+            });
+
+            stopProgressTimer();
+            progressTimer = setInterval(() => {
+                reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, ticksFromVideo(), video.paused).catch(error => {
+                    console.warn(debugPrefix, 'Embedded playback progress report failed', error);
+                });
+            }, 10000);
+        }, { once: true });
+
+        video.addEventListener('pause', () => {
+            reportEmbeddedPlaybackProgress(item, mediaSourceId, playSessionId, ticksFromVideo(), true).catch(error => {
+                console.warn(debugPrefix, 'Embedded playback pause report failed', error);
+            });
+        });
+
+        video.addEventListener('ended', () => {
+            stopProgressTimer();
+            reportEmbeddedPlaybackStopped(item, mediaSourceId, playSessionId, ticksFromVideo()).catch(error => {
+                console.warn(debugPrefix, 'Embedded playback end report failed', error);
+            });
+        });
 
         video.play().catch(error => {
             console.warn(debugPrefix, 'Embedded player autoplay failed', error);
@@ -716,7 +826,7 @@
         const item = await getItem(itemId);
         await logServerMediaSourceDiagnostic(itemId);
         logApiClientPlaybackCapabilities();
-        await getSelectedPlaybackInfo(itemId, expectedMediaSourceId);
+        const selectedPlaybackInfo = await getSelectedPlaybackInfo(itemId, expectedMediaSourceId);
 
         if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
             return;
@@ -730,7 +840,22 @@
             return;
         }
 
-        playInEmbeddedPlayer(item, streamingUrl);
+        const jellyfinStreamUrl = buildJellyfinTranscodedStreamUrl(
+            itemId,
+            expectedMediaSourceId,
+            selectedPlaybackInfo?.PlaySessionId || selectedPlaybackInfo?.playSessionId || ''
+        );
+        debug('Using Jellyfin transcoded fallback stream', {
+            mediaSourceId: expectedMediaSourceId,
+            hasPlaySessionId: Boolean(selectedPlaybackInfo?.PlaySessionId || selectedPlaybackInfo?.playSessionId)
+        });
+
+        playInEmbeddedPlayer(
+            item,
+            jellyfinStreamUrl,
+            expectedMediaSourceId,
+            selectedPlaybackInfo?.PlaySessionId || selectedPlaybackInfo?.playSessionId || ''
+        );
     }
 
     function showSources(item, sources) {

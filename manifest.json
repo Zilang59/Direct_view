@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.29",
-        "changelog": "Try Jellyfin's PlayMediaSource general session command for native playback of the selected external media source.",
+        "version": "0.2.30",
+        "changelog": "Use a Jellyfin transcoded stream fallback with playback progress reporting instead of the raw external browser stream.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.29.zip",
-        "checksum": "08cece5554ee391c91736fead8ba90f4",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.30.zip",
+        "checksum": "2d12e67c5489f7d77bcc26268089318c",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.29.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.30.zip"
       }
     ]
   }
