@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.27';
+    const scriptVersion = '0.2.28';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -557,6 +557,42 @@
             apiClientMethods: clientMethods,
             windowPlaybackKeys
         });
+        console.debug(`${debugPrefix} Jellyfin playback capability scan JSON`, JSON.stringify({
+            apiClientMethods: clientMethods,
+            windowPlaybackKeys
+        }));
+    }
+
+    async function getSelectedPlaybackInfo(itemId, mediaSourceId) {
+        try {
+            const client = apiClient();
+            const userId = client?.getCurrentUserId ? client.getCurrentUserId() : window.ApiClient?._serverInfo?.UserId;
+            const query = new URLSearchParams({
+                UserId: userId || '',
+                MediaSourceId: mediaSourceId || '',
+                StartTimeTicks: '0',
+                IsPlayback: 'true',
+                AutoOpenLiveStream: 'true',
+                EnableDirectPlay: 'true',
+                EnableDirectStream: 'true',
+                EnableTranscoding: 'true',
+                AllowVideoStreamCopy: 'true',
+                AllowAudioStreamCopy: 'false',
+                MaxStreamingBitrate: '120000000'
+            });
+
+            const playbackInfo = await jellyfinFetch(`/Items/${encodeURIComponent(itemId)}/PlaybackInfo?${query.toString()}`, {
+                method: 'POST',
+                body: {}
+            });
+
+            debug('Selected Jellyfin PlaybackInfo', playbackInfo);
+            console.debug(`${debugPrefix} Selected Jellyfin PlaybackInfo JSON`, JSON.stringify(playbackInfo));
+            return playbackInfo;
+        } catch (error) {
+            console.warn(debugPrefix, 'Selected Jellyfin PlaybackInfo failed', error);
+            return null;
+        }
     }
 
     function triggerNativePlayback(expectedMediaSourceId) {
@@ -637,6 +673,7 @@
         const item = await getItem(itemId);
         await logServerMediaSourceDiagnostic(itemId);
         logApiClientPlaybackCapabilities();
+        await getSelectedPlaybackInfo(itemId, expectedMediaSourceId);
 
         if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
             return;
