@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.11",
-        "changelog": "Use a safer broad index.html match for File Transformation while keeping the HTML content guard.",
+        "version": "0.2.12",
+        "changelog": "Register the File Transformation index.html pattern in the format used by Jellyfin web plugins and add a client load debug marker.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.11.zip",
-        "checksum": "725b4b7ef29d2394236c52e85a708ed3",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.12.zip",
+        "checksum": "3cb0fdbb46337c4f4131169c2c54acd0",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.11.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.12.zip"
       }
     ]
   }

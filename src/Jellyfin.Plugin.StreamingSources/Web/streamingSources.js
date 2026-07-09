@@ -483,6 +483,7 @@
     }
 
     ensureStyles();
+    debug('Client script loaded');
     observeNavigation();
     setTimeout(injectButton, 500);
 })();
