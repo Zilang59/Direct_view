@@ -28,4 +28,6 @@ public sealed class StreamingSource
     public string DirectUrl { get; set; } = string.Empty;
 
     public string Provider { get; set; } = string.Empty;
+
+    public string Description { get; set; } = string.Empty;
 }

@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.13",
-        "changelog": "Parse Jellyfin Ajax Response payloads before displaying source results or resolving streams.",
+        "version": "0.2.14",
+        "changelog": "Improve Stremio/Lumio source metadata extraction and accept PascalCase resolved stream URLs.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.13.zip",
-        "checksum": "df601c3e8f7ff2dabfdd8410e8d52d31",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.14.zip",
+        "checksum": "56a81331bafe060cc7f50a8206a756b9",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.13.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.14.zip"
       }
     ]
   }

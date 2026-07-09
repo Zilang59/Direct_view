@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 using Jellyfin.Plugin.StreamingSources.Models;
 using Microsoft.Extensions.Logging;
@@ -171,21 +172,57 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         }
 
         var title = FirstNonEmpty(stream.Title, stream.Name, "Stremio source");
+        var details = string.Join(
+            "\n",
+            new[] { stream.Name, stream.Title, stream.Description, stream.BehaviorHints?.Filename }
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase));
+        var displayName = BuildDisplayName(stream, details);
+
         return new StreamingSource
         {
-            Name = title,
-            SizeBytes = 0,
-            Seeders = 0,
-            Language = GuessLanguage(title),
-            Quality = GuessQuality(title),
-            Codec = GuessCodec(title),
-            IsHdr = title.Contains("HDR", StringComparison.OrdinalIgnoreCase),
-            IsDolbyVision = title.Contains("DV", StringComparison.OrdinalIgnoreCase) || title.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase),
+            Name = displayName,
+            SizeBytes = GuessSizeBytes(details),
+            Seeders = GuessSeeders(details),
+            Language = GuessLanguage(details),
+            Quality = GuessQuality(details),
+            Codec = GuessCodec(details),
+            IsHdr = details.Contains("HDR", StringComparison.OrdinalIgnoreCase),
+            IsDolbyVision = details.Contains("DV", StringComparison.OrdinalIgnoreCase) || details.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase),
             Hash = hash,
             Magnet = magnet,
             DirectUrl = directUrl.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase) ? string.Empty : directUrl,
-            Provider = manifestUrl.Host
+            Provider = manifestUrl.Host,
+            Description = CleanDescription(details, title)
         };
+    }
+
+    private static string BuildDisplayName(StremioStream stream, string details)
+    {
+        var quality = GuessQuality(details);
+        var language = GuessLanguage(details);
+        var codec = GuessCodec(details);
+        var hdr = details.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase)
+            ? "Dolby Vision"
+            : details.Contains("HDR", StringComparison.OrdinalIgnoreCase) ? "HDR" : string.Empty;
+
+        var parts = new[] { stream.Name, quality, language, codec, hdr }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        var display = string.Join(" - ", parts);
+        return string.IsNullOrWhiteSpace(display) ? FirstNonEmpty(stream.Title, "Stremio source") : display;
+    }
+
+    private static string CleanDescription(string details, string fallback)
+    {
+        var value = details
+            .Replace("\r", "\n", StringComparison.Ordinal)
+            .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        var description = string.Join("\n", value);
+        return string.IsNullOrWhiteSpace(description) ? fallback : description;
     }
 
     private static string FirstNonEmpty(params string?[] values)
@@ -251,6 +288,35 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         return string.Empty;
     }
 
+    private static int GuessSeeders(string title)
+    {
+        var match = Regex.Match(title, @"(?:seeders?|seeds?)\D*(\d+)|(\d+)\D*(?:seeders?|seeds?)", RegexOptions.IgnoreCase);
+        var value = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value;
+        if (match.Success && int.TryParse(value, out var seeders))
+        {
+            return seeders;
+        }
+
+        return 0;
+    }
+
+    private static long GuessSizeBytes(string title)
+    {
+        var match = Regex.Match(title, @"(\d+(?:[\.,]\d+)?)\s*(GB|GiB|Go|MB|MiB|Mo)\b", RegexOptions.IgnoreCase);
+        if (!match.Success ||
+            !double.TryParse(match.Groups[1].Value.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var size))
+        {
+            return 0;
+        }
+
+        var unit = match.Groups[2].Value.ToLowerInvariant();
+        var multiplier = unit is "mb" or "mib" or "mo"
+            ? 1024L * 1024L
+            : 1024L * 1024L * 1024L;
+
+        return (long)(size * multiplier);
+    }
+
     private sealed class StremioStreamResponse
     {
         [JsonPropertyName("streams")]
@@ -265,6 +331,9 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         [JsonPropertyName("title")]
         public string? Title { get; set; }
 
+        [JsonPropertyName("description")]
+        public string? Description { get; set; }
+
         [JsonPropertyName("url")]
         public string? Url { get; set; }
 
@@ -273,5 +342,14 @@ public sealed class ExternalSourceClient : IExternalSourceClient
 
         [JsonPropertyName("infoHash")]
         public string? InfoHash { get; set; }
+
+        [JsonPropertyName("behaviorHints")]
+        public StremioBehaviorHints? BehaviorHints { get; set; }
+    }
+
+    private sealed class StremioBehaviorHints
+    {
+        [JsonPropertyName("filename")]
+        public string? Filename { get; set; }
     }
 }
