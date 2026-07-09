@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.12",
-        "changelog": "Register the File Transformation index.html pattern in the format used by Jellyfin web plugins and add a client load debug marker.",
+        "version": "0.2.13",
+        "changelog": "Parse Jellyfin Ajax Response payloads before displaying source results or resolving streams.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.12.zip",
-        "checksum": "3cb0fdbb46337c4f4131169c2c54acd0",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.13.zip",
+        "checksum": "df601c3e8f7ff2dabfdd8410e8d52d31",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.12.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.13.zip"
       }
     ]
   }

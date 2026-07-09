@@ -233,6 +233,31 @@
         throw new Error(`Format de reponse sources inattendu. Cles recues: ${keys}`);
     }
 
+    async function parseResponsePayload(response) {
+        if (!response || typeof response !== 'object' || typeof response.text !== 'function') {
+            return response;
+        }
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        if (response.status === 204) {
+            return null;
+        }
+
+        const text = await response.text();
+        if (!text) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return text;
+        }
+    }
+
     async function jellyfinFetch(path, options) {
         const client = apiClient();
         if (!client) {
@@ -240,11 +265,12 @@
         }
 
         if (typeof client.ajax === 'function') {
-            return client.ajax(Object.assign({
+            const ajaxResponse = await client.ajax(Object.assign({
                 type: options.method || 'GET',
                 url: client.getUrl(path),
                 contentType: 'application/json'
             }, options.body ? { data: JSON.stringify(options.body) } : {}));
+            return parseResponsePayload(ajaxResponse);
         }
 
         const token = client.accessToken && client.accessToken();
@@ -261,7 +287,7 @@
             throw new Error(await response.text());
         }
 
-        return response.status === 204 ? null : response.json();
+        return parseResponsePayload(response);
     }
 
     async function getItem(itemId) {
