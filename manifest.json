@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.1.0",
-        "changelog": "Initial development build for Jellyfin 10.11.x / .NET 9.",
+        "version": "0.1.1",
+        "changelog": "Fix Jellyfin repository installation metadata and package checksum.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.0.zip",
-        "checksum": "2a6308e27867a9097a4817c607284fbe",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.1.zip",
+        "checksum": "5c3d670ab30e26a6658294ec76d93925",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.0.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.1.zip"
       }
     ]
   }
