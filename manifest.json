@@ -12,7 +12,7 @@
         "changelog": "Initial development build for Jellyfin 10.11.x / .NET 9.",
         "targetAbi": "10.11.10.0",
         "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.0.zip",
-        "checksum": "53a8638c33040c80a49962f57df095fa2170b411d675df478f1d0f60dc6e9e12",
+        "checksum": "2a6308e27867a9097a4817c607284fbe",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",

@@ -25,10 +25,12 @@ Copy-Item (Join-Path $buildOutput "Jellyfin.Plugin.StreamingSources.xml") $packa
 Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue
 Compress-Archive -Path (Join-Path $packageRoot "*") -DestinationPath $zip -Force
 
-$hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
+$md5 = (Get-FileHash -Algorithm MD5 -LiteralPath $zip).Hash.ToLowerInvariant()
+$sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
 
 [pscustomobject]@{
     Version = $Version
     Package = $zip
-    Sha256 = $hash
+    JellyfinChecksumMd5 = $md5
+    Sha256 = $sha256
 } | ConvertTo-Json
