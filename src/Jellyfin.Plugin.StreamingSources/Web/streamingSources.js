@@ -287,7 +287,9 @@
             isHdr: source.isHdr || source.IsHdr || false,
             isDolbyVision: source.isDolbyVision || source.IsDolbyVision || false,
             hash: source.hash || source.Hash || '',
-            magnet: source.magnet || source.Magnet || ''
+            magnet: source.magnet || source.Magnet || '',
+            directUrl: source.directUrl || source.DirectUrl || '',
+            provider: source.provider || source.Provider || ''
         };
     }
 

@@ -16,8 +16,23 @@
                         <input is="emby-input" type="url" id="ExternalApiUrl" label="URL API externe" />
                     </div>
 
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="EnableExternalApi" />
+                        <span>Activer l'API externe personnalisée</span>
+                    </label>
+
                     <div class="inputContainer">
                         <input is="emby-input" type="password" id="ExternalApiKey" label="Cle API externe" />
+                    </div>
+
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="EnableStremioAddons" />
+                        <span>Activer les manifests Stremio/Lumio</span>
+                    </label>
+
+                    <div class="inputContainer">
+                        <textarea is="emby-textarea" id="StremioManifestUrls" label="Manifests Stremio/Lumio"></textarea>
+                        <div class="fieldDescription">Un manifest par ligne. Exemple: https://mylumio.tv/.../manifest.json</div>
                     </div>
 
                     <div class="selectContainer">
@@ -71,7 +86,10 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(StreamingSourcesConfig.pluginUniqueId).then(function (config) {
                         document.querySelector('#ExternalApiUrl').value = config.ExternalApiUrl || '';
+                        document.querySelector('#EnableExternalApi').checked = config.EnableExternalApi !== false;
                         document.querySelector('#ExternalApiKey').value = config.ExternalApiKey || '';
+                        document.querySelector('#EnableStremioAddons').checked = config.EnableStremioAddons !== false;
+                        document.querySelector('#StremioManifestUrls').value = config.StremioManifestUrls || '';
                         document.querySelector('#DebridProvider').value = config.DebridProvider || 'AllDebrid';
                         document.querySelector('#AllDebridApiKey').value = config.AllDebridApiKey || '';
                         document.querySelector('#TimeoutSeconds').value = config.TimeoutSeconds || 30;
@@ -90,7 +108,10 @@
 
                     ApiClient.getPluginConfiguration(StreamingSourcesConfig.pluginUniqueId).then(function (config) {
                         config.ExternalApiUrl = document.querySelector('#ExternalApiUrl').value;
+                        config.EnableExternalApi = document.querySelector('#EnableExternalApi').checked;
                         config.ExternalApiKey = document.querySelector('#ExternalApiKey').value;
+                        config.EnableStremioAddons = document.querySelector('#EnableStremioAddons').checked;
+                        config.StremioManifestUrls = document.querySelector('#StremioManifestUrls').value;
                         config.DebridProvider = document.querySelector('#DebridProvider').value;
                         config.AllDebridApiKey = document.querySelector('#AllDebridApiKey').value;
                         config.TimeoutSeconds = parseInt(document.querySelector('#TimeoutSeconds').value || '30', 10);

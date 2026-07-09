@@ -235,12 +235,34 @@ Dans Jellyfin :
 
 1. Ouvrir `Tableau de bord > Plugins`.
 2. Ouvrir `Streaming Sources`.
-3. Renseigner `URL API externe`.
-4. Renseigner `Cle API externe` si votre API en demande une.
-5. Selectionner `AllDebrid`.
-6. Renseigner `Cle API AllDebrid`.
-7. Ajuster `Timeout`, `Taille maximale`, `Nombre maximal de resultats` et `Tri par defaut`.
-8. Enregistrer puis redemarrer Jellyfin si necessaire.
+3. Activer les sources souhaitees.
+4. Pour un backend maison, renseigner `URL API externe`.
+5. Pour un addon Stremio/Lumio, renseigner un ou plusieurs manifests dans `Manifests Stremio/Lumio`.
+6. Selectionner `AllDebrid`.
+7. Renseigner `Cle API AllDebrid` si les sources retournent des magnets ou hashes a resoudre.
+8. Ajuster `Timeout`, `Taille maximale`, `Nombre maximal de resultats` et `Tri par defaut`.
+9. Enregistrer puis redemarrer Jellyfin si necessaire.
+
+### Mode Stremio / Lumio
+
+Le plugin peut consommer des manifests Stremio compatibles, mais uniquement pour la recherche de streams. Les catalogues, pages d'accueil, metas et recommandations du manifest sont ignores.
+
+Exemple :
+
+```text
+https://mylumio.tv/iD8AVHMOKNIi/manifest.json
+```
+
+Le plugin appelle ensuite les endpoints de stream :
+
+```text
+/stream/movie/{imdbId}.json
+/stream/movie/tmdb:{tmdbId}.json
+/stream/series/{imdbId}:{season}:{episode}.json
+/stream/series/tmdb:{tmdbId}:{season}:{episode}.json
+```
+
+Si le stream Stremio retourne deja une URL directe, elle est utilisee directement. Si le stream retourne un hash ou magnet, le plugin peut passer par le fournisseur Debrid configure.
 
 Pour le moment, le client API externe appelle l'endpoint suivant :
 

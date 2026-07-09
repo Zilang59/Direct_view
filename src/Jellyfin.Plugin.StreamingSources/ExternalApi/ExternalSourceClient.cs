@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Jellyfin.Plugin.StreamingSources.Models;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,32 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         var configuration = Plugin.Instance?.Configuration
             ?? throw new InvalidOperationException("Plugin configuration is not available.");
 
+        var sources = new List<StreamingSource>();
+
+        if (configuration.EnableExternalApi && !string.IsNullOrWhiteSpace(configuration.ExternalApiUrl))
+        {
+            sources.AddRange(await SearchExternalApiAsync(configuration, request, cancellationToken).ConfigureAwait(false));
+        }
+
+        if (configuration.EnableStremioAddons && !string.IsNullOrWhiteSpace(configuration.StremioManifestUrls))
+        {
+            sources.AddRange(await SearchStremioAddonsAsync(configuration, request, cancellationToken).ConfigureAwait(false));
+        }
+
+        var filteredSources = sources
+            .Where(source => configuration.MaxSizeGb <= 0 || source.SizeBytes <= configuration.MaxSizeGb * 1024L * 1024L * 1024L)
+            .Take(Math.Max(1, configuration.MaxResults))
+            .ToArray();
+
+        _logger.LogInformation("Source search returned {SourceCount} source(s).", filteredSources.Length);
+        return filteredSources;
+    }
+
+    private async Task<IReadOnlyList<StreamingSource>> SearchExternalApiAsync(
+        Configuration.PluginConfiguration configuration,
+        MediaLookupRequest request,
+        CancellationToken cancellationToken)
+    {
         if (!Uri.TryCreate(configuration.ExternalApiUrl, UriKind.Absolute, out var baseUri) ||
             (baseUri.Scheme != Uri.UriSchemeHttps && baseUri.Scheme != Uri.UriSchemeHttp))
         {
@@ -39,13 +66,212 @@ public sealed class ExternalSourceClient : IExternalSourceClient
         response.EnsureSuccessStatusCode();
 
         var sources = await response.Content.ReadFromJsonAsync<StreamingSource[]>(cancellationToken).ConfigureAwait(false);
-        var filteredSources = (sources ?? Array.Empty<StreamingSource>())
-            .Where(source => configuration.MaxSizeGb <= 0 || source.SizeBytes <= configuration.MaxSizeGb * 1024L * 1024L * 1024L)
-            .Take(Math.Max(1, configuration.MaxResults))
-            .ToArray();
+        return sources ?? Array.Empty<StreamingSource>();
+    }
 
-        _logger.LogInformation("External source API returned {SourceCount} source(s).", filteredSources.Length);
+    private async Task<IReadOnlyList<StreamingSource>> SearchStremioAddonsAsync(
+        Configuration.PluginConfiguration configuration,
+        MediaLookupRequest request,
+        CancellationToken cancellationToken)
+    {
+        var results = new List<StreamingSource>();
+        foreach (var manifestUrl in StremioManifestUrls(configuration.StremioManifestUrls))
+        {
+            results.AddRange(await SearchStremioAddonAsync(configuration, manifestUrl, request, cancellationToken).ConfigureAwait(false));
+        }
 
-        return filteredSources;
+        return results;
+    }
+
+    private async Task<IReadOnlyList<StreamingSource>> SearchStremioAddonAsync(
+        Configuration.PluginConfiguration configuration,
+        Uri manifestUrl,
+        MediaLookupRequest request,
+        CancellationToken cancellationToken)
+    {
+        var streamUrls = BuildStremioStreamUrls(manifestUrl, request);
+        var sources = new List<StreamingSource>();
+
+        foreach (var streamUrl in streamUrls)
+        {
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, streamUrl);
+            requestMessage.Headers.Accept.ParseAdd("application/json");
+
+            using var response = await _httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Stremio addon {ManifestUrl} returned status {StatusCode}.", manifestUrl, response.StatusCode);
+                continue;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<StremioStreamResponse>(cancellationToken).ConfigureAwait(false);
+            foreach (var stream in payload?.Streams ?? Array.Empty<StremioStream>())
+            {
+                var source = ConvertStremioStream(manifestUrl, stream);
+                if (source is not null)
+                {
+                    sources.Add(source);
+                }
+            }
+        }
+
+        return sources;
+    }
+
+    private static IEnumerable<Uri> StremioManifestUrls(string value)
+    {
+        return value
+            .Split(new[] { '\r', '\n', ',', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(url => Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri : null)
+            .Where(uri => uri is not null)!
+            .Cast<Uri>();
+    }
+
+    private static IEnumerable<Uri> BuildStremioStreamUrls(Uri manifestUrl, MediaLookupRequest request)
+    {
+        var baseUrl = manifestUrl.ToString();
+        if (baseUrl.EndsWith("/manifest.json", StringComparison.OrdinalIgnoreCase))
+        {
+            baseUrl = baseUrl[..^"/manifest.json".Length];
+        }
+        baseUrl = baseUrl.TrimEnd('/');
+
+        var ids = new List<string>();
+        if (!string.IsNullOrWhiteSpace(request.ImdbId))
+        {
+            ids.Add(request.ImdbId);
+        }
+        if (!string.IsNullOrWhiteSpace(request.TmdbId))
+        {
+            ids.Add("tmdb:" + request.TmdbId);
+        }
+
+        foreach (var id in ids.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (request.SeasonNumber is > 0 && request.EpisodeNumber is > 0)
+            {
+                yield return new Uri($"{baseUrl}/stream/series/{Uri.EscapeDataString(id + ":" + request.SeasonNumber + ":" + request.EpisodeNumber)}.json");
+            }
+            else
+            {
+                yield return new Uri($"{baseUrl}/stream/movie/{Uri.EscapeDataString(id)}.json");
+            }
+        }
+    }
+
+    private static StreamingSource? ConvertStremioStream(Uri manifestUrl, StremioStream stream)
+    {
+        var directUrl = FirstNonEmpty(stream.Url, stream.ExternalUrl);
+        var hash = FirstNonEmpty(stream.InfoHash, HashFromMagnet(stream.ExternalUrl), HashFromMagnet(stream.Url));
+        var magnet = !string.IsNullOrWhiteSpace(hash) ? "magnet:?xt=urn:btih:" + hash : string.Empty;
+
+        if (string.IsNullOrWhiteSpace(directUrl) && string.IsNullOrWhiteSpace(magnet))
+        {
+            return null;
+        }
+
+        var title = FirstNonEmpty(stream.Title, stream.Name, "Stremio source");
+        return new StreamingSource
+        {
+            Name = title,
+            SizeBytes = 0,
+            Seeders = 0,
+            Language = GuessLanguage(title),
+            Quality = GuessQuality(title),
+            Codec = GuessCodec(title),
+            IsHdr = title.Contains("HDR", StringComparison.OrdinalIgnoreCase),
+            IsDolbyVision = title.Contains("DV", StringComparison.OrdinalIgnoreCase) || title.Contains("Dolby Vision", StringComparison.OrdinalIgnoreCase),
+            Hash = hash,
+            Magnet = magnet,
+            DirectUrl = directUrl.StartsWith("magnet:", StringComparison.OrdinalIgnoreCase) ? string.Empty : directUrl,
+            Provider = manifestUrl.Host
+        };
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? string.Empty;
+    }
+
+    private static string HashFromMagnet(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var match = System.Text.RegularExpressions.Regex.Match(value, "btih:([a-fA-F0-9]{40})");
+        return match.Success ? match.Groups[1].Value.ToLowerInvariant() : string.Empty;
+    }
+
+    private static string GuessQuality(string title)
+    {
+        if (title.Contains("2160p", StringComparison.OrdinalIgnoreCase) || title.Contains("4K", StringComparison.OrdinalIgnoreCase))
+        {
+            return "2160p";
+        }
+        if (title.Contains("1080p", StringComparison.OrdinalIgnoreCase))
+        {
+            return "1080p";
+        }
+        if (title.Contains("720p", StringComparison.OrdinalIgnoreCase))
+        {
+            return "720p";
+        }
+        return string.Empty;
+    }
+
+    private static string GuessLanguage(string title)
+    {
+        if (title.Contains("VOSTFR", StringComparison.OrdinalIgnoreCase))
+        {
+            return "VOSTFR";
+        }
+        if (title.Contains("VF", StringComparison.OrdinalIgnoreCase) || title.Contains("French", StringComparison.OrdinalIgnoreCase))
+        {
+            return "VF";
+        }
+        if (title.Contains("Multi", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MULTI";
+        }
+        return string.Empty;
+    }
+
+    private static string GuessCodec(string title)
+    {
+        foreach (var codec in new[] { "x265", "x264", "HEVC", "AV1", "H264", "H265" })
+        {
+            if (title.Contains(codec, StringComparison.OrdinalIgnoreCase))
+            {
+                return codec;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private sealed class StremioStreamResponse
+    {
+        [JsonPropertyName("streams")]
+        public StremioStream[]? Streams { get; set; }
+    }
+
+    private sealed class StremioStream
+    {
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("url")]
+        public string? Url { get; set; }
+
+        [JsonPropertyName("externalUrl")]
+        public string? ExternalUrl { get; set; }
+
+        [JsonPropertyName("infoHash")]
+        public string? InfoHash { get; set; }
     }
 }

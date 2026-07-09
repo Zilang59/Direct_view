@@ -53,9 +53,19 @@ public sealed class StreamingSourcesController : ControllerBase
             return BadRequest("JellyfinItemId is required.");
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Source.DirectUrl))
+        {
+            var directNow = DateTimeOffset.UtcNow;
+            await _sourceCache.SetAsync(
+                new CachedSource(request.JellyfinItemId, request.Source.Provider, request.Source.Hash, string.Empty, request.Source.DirectUrl, directNow, directNow),
+                cancellationToken).ConfigureAwait(false);
+
+            return Ok(new ResolvedSourceResponse(request.Source.DirectUrl, request.Source.Provider, request.Source.Hash, false));
+        }
+
         if (string.IsNullOrWhiteSpace(request.Source.Magnet))
         {
-            return BadRequest("Source magnet is required.");
+            return BadRequest("Source magnet or direct URL is required.");
         }
 
         var cached = await _sourceCache.GetAsync(request.JellyfinItemId, cancellationToken).ConfigureAwait(false);

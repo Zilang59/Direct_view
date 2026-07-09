@@ -24,4 +24,8 @@ public sealed class StreamingSource
     public string Hash { get; set; } = string.Empty;
 
     public string Magnet { get; set; } = string.Empty;
+
+    public string DirectUrl { get; set; } = string.Empty;
+
+    public string Provider { get; set; } = string.Empty;
 }

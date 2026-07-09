@@ -18,6 +18,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public string ExternalApiKey { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets newline-separated Stremio/Lumio manifest URLs.
+    /// </summary>
+    public string StremioManifestUrls { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the Debrid provider name.
     /// </summary>
     public string DebridProvider { get; set; } = "AllDebrid";
@@ -46,4 +51,14 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets the default sort key.
     /// </summary>
     public string DefaultSort { get; set; } = "quality";
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the external API should be queried.
+    /// </summary>
+    public bool EnableExternalApi { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether Stremio-compatible stream addons should be queried.
+    /// </summary>
+    public bool EnableStremioAddons { get; set; } = true;
 }
