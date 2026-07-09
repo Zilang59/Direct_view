@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.0",
-        "changelog": "Add Stremio/Lumio manifest stream support and direct Debrid URL sources.",
+        "version": "0.2.1",
+        "changelog": "Inject the Sources button into Jellyfin Web through the File Transformation plugin.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.0.zip",
-        "checksum": "d5a2ddb46d2d0d92f948e91a86f6fc20",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.1.zip",
+        "checksum": "e95f7227b52371f468c03fc66829d17b",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.0.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.1.zip"
       }
     ]
   }

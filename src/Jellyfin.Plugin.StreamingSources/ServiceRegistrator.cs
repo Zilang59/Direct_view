@@ -1,9 +1,11 @@
 using Jellyfin.Plugin.StreamingSources.Cache;
 using Jellyfin.Plugin.StreamingSources.Debrid;
 using Jellyfin.Plugin.StreamingSources.ExternalApi;
+using Jellyfin.Plugin.StreamingSources.Web;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Jellyfin.Plugin.StreamingSources;
 
@@ -19,5 +21,6 @@ namespace Jellyfin.Plugin.StreamingSources;
         serviceCollection.AddHttpClient<IExternalSourceClient, ExternalSourceClient>();
         serviceCollection.AddHttpClient<AllDebridProvider>();
         serviceCollection.AddTransient<IDebridProvider>(provider => provider.GetRequiredService<AllDebridProvider>());
+        serviceCollection.AddSingleton<IHostedService, FileTransformationEntryPoint>();
     }
 }

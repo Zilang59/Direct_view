@@ -4,7 +4,7 @@ Plugin Jellyfin visant a proposer des sources de streaming externes pour les med
 
 L'objectif est de garder l'utilisateur dans l'interface Jellyfin : recherche de source, choix du torrent, mise en cache Debrid, puis lecture immediate dans le lecteur Jellyfin.
 
-> Statut du projet : premiere base technique. Le depot contient un squelette de plugin Jellyfin 10.11.x / .NET 9, une page de configuration, les modeles principaux, un client API externe, une interface Debrid, une premiere implementation AllDebrid et des endpoints backend internes. L'integration complete du bouton `Sources` dans l'interface de lecture Jellyfin reste a implementer.
+> Statut du projet : prototype installable pour Jellyfin 10.11.10 / .NET 9. Le depot contient la page de configuration, les modeles principaux, un client API externe, un mode Stremio/Lumio, une interface Debrid, une premiere implementation AllDebrid, des endpoints backend internes et une injection du bouton `Sources` via le plugin Jellyfin `File Transformation`.
 
 ## Fonctionnement vise
 
@@ -243,6 +243,24 @@ Dans Jellyfin :
 8. Ajuster `Timeout`, `Taille maximale`, `Nombre maximal de resultats` et `Tri par defaut`.
 9. Enregistrer puis redemarrer Jellyfin si necessaire.
 
+### Bouton Sources dans Jellyfin Web
+
+Jellyfin ne fournit pas d'API serveur officielle stable pour modifier directement les pages du client web. Pour eviter de modifier les fichiers de Jellyfin a la main, le plugin utilise le plugin communautaire `File Transformation` lorsqu'il est installe.
+
+Apres installation ou mise a jour :
+
+1. Verifier que `File Transformation` est installe et actif.
+2. Redemarrer Jellyfin.
+3. Vider le cache du navigateur ou faire `Ctrl+F5`.
+4. Ouvrir une page film ou episode.
+5. Le bouton `Sources` doit apparaitre dans les actions de la page.
+
+Si le bouton n'apparait pas, consulter les logs Jellyfin et chercher :
+
+```text
+Registered Streaming Sources web button injection with File Transformation.
+```
+
 ### Mode Stremio / Lumio
 
 Le plugin peut consommer des manifests Stremio compatibles, mais uniquement pour la recherche de streams. Les catalogues, pages d'accueil, metas et recommandations du manifest sont ignores.
@@ -315,7 +333,7 @@ Flux attendu apres installation :
 
 Lors des lectures suivantes, le plugin devra reutiliser la source mise en cache.
 
-Etat actuel : la partie backend est initialisee et compilable. Le bouton `Sources` dans les pages film/episode et le lancement direct dans le player Jellyfin restent les prochaines etapes.
+Etat actuel : la partie backend est initialisee et compilable. Le bouton `Sources` est injecte dans Jellyfin Web via `File Transformation`. Le lancement utilise pour l'instant l'URL directe retournee par le fournisseur Debrid ou le manifest Stremio/Lumio ; l'integration fine avec toutes les fonctions natives du player Jellyfin reste a renforcer.
 
 ### Bouton Sources
 
@@ -327,7 +345,7 @@ Le depot contient un script web embarque :
 
 Ce script ajoute un bouton `Sources` sur les pages de detail film/episode, appelle le backend du plugin, affiche les sources disponibles, puis lance l'URL Debrid resolue.
 
-Limite actuelle : Jellyfin ne fournit pas d'API officielle stable permettant a un plugin serveur d'injecter automatiquement du JavaScript dans toutes les pages du web client. Le plugin expose donc le script, et l'URL exacte est affichee dans la page de configuration. Selon votre installation Jellyfin, il faudra soit utiliser un mecanisme d'injection de script du web client, soit modifier le web client, soit utiliser une extension dediee a l'injection JavaScript.
+Le plugin enregistre automatiquement une transformation de `index.html` via `File Transformation` pour charger ce script dans Jellyfin Web.
 
 ## Packaging
 
