@@ -16,7 +16,7 @@
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://github.com/Zilang59/Direct_view/releases/download/v0.1.0/Jellyfin.Plugin.StreamingSources-0.1.0.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.1.0.zip"
       }
     ]
   }

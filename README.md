@@ -321,7 +321,23 @@ Le ZIP est genere dans :
 artifacts/Jellyfin.Plugin.StreamingSources-0.1.0.zip
 ```
 
-Le fichier `manifest.json` sert de base pour un depot de plugins Jellyfin. Pour une installation par URL de repository dans Jellyfin, il faut publier le ZIP dans une release GitHub et verifier que `packageUrl` et `checksum` correspondent exactement au fichier publie.
+Le fichier `manifest.json` peut etre utilise directement comme depot de plugin Jellyfin :
+
+```text
+https://raw.githubusercontent.com/Zilang59/Direct_view/main/manifest.json
+```
+
+Dans Jellyfin :
+
+1. Ouvrir `Tableau de bord > Plugins > Repositories`.
+2. Ajouter un depot avec le nom `Streaming Sources`.
+3. Utiliser l'URL ci-dessus.
+4. Sauvegarder.
+5. Aller dans le catalogue des plugins.
+6. Installer `Streaming Sources`.
+7. Redemarrer Jellyfin.
+
+Le ZIP de developpement est versionne dans `packages/` afin de faciliter les tests depuis ce repo. Pour des releases publiques propres, il sera preferable de publier les ZIP dans les releases GitHub et de mettre a jour `packageUrl`.
 
 ## Developpement
 
