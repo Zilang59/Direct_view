@@ -38,6 +38,7 @@ Desktop.ini
 
 # Logs and diagnostics
 *.log
+log/
 logs/
 *.trace
 *.dmp
