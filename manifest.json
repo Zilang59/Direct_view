@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.8",
-        "changelog": "Refine Sources icon styling and add console debugging for source search responses.",
+        "version": "0.2.9",
+        "changelog": "Restrict File Transformation injection to the root index.html and guard non-HTML files.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.8.zip",
-        "checksum": "d074ad27a8de19deea90c265d90ec13e",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.9.zip",
+        "checksum": "b32c8ebaa549d26d3801def3d2e87f62",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.8.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.9.zip"
       }
     ]
   }

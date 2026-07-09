@@ -19,6 +19,12 @@ public static class WebIndexTransformer
             return contents;
         }
 
+        if (!contents.Contains("<html", StringComparison.OrdinalIgnoreCase) &&
+            !contents.Contains("</body>", StringComparison.OrdinalIgnoreCase))
+        {
+            return contents;
+        }
+
         string updated = contents.Contains("</body>", StringComparison.OrdinalIgnoreCase)
             ? ReplaceLastIgnoreCase(contents, "</body>", ScriptTag + "</body>")
             : contents + ScriptTag;
