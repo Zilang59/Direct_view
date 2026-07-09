@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.28",
-        "changelog": "Request Jellyfin PlaybackInfo for the selected Streaming Sources media source and log full playback capabilities.",
+        "version": "0.2.29",
+        "changelog": "Try Jellyfin's PlayMediaSource general session command for native playback of the selected external media source.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.28.zip",
-        "checksum": "01e5ea8ff5477ff99afaebb62c6d8ac2",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.29.zip",
+        "checksum": "08cece5554ee391c91736fead8ba90f4",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.28.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.29.zip"
       }
     ]
   }
