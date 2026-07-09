@@ -10,9 +10,9 @@
       {
         "version": "0.1.0",
         "changelog": "Initial development build for Jellyfin 10.11.x / .NET 9.",
-        "targetAbi": "10.11.0.0",
+        "targetAbi": "10.11.10.0",
         "sourceUrl": "https://github.com/Zilang59/Direct_view",
-        "checksum": "7104f14db237cd70bf5484619dcfc1c6313bc6ba998049c73455db5be2fabd71",
+        "checksum": "53a8638c33040c80a49962f57df095fa2170b411d675df478f1d0f60dc6e9e12",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
