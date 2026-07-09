@@ -343,6 +343,39 @@
         return jellyfinFetch(`/Users/${userId}/Items/${itemId}`, { method: 'GET' });
     }
 
+    async function getCurrentSession() {
+        const client = apiClient();
+        const userId = client?.getCurrentUserId ? client.getCurrentUserId() : window.ApiClient?._serverInfo?.UserId;
+        const deviceId = client?.deviceId ? client.deviceId() : client?._deviceId;
+
+        if (!userId) {
+            debug('Cannot resolve current session: missing user id');
+            return null;
+        }
+
+        const sessions = await jellyfinFetch(`/Sessions?ControllableByUserId=${encodeURIComponent(userId)}`, { method: 'GET' });
+        const list = Array.isArray(sessions) ? sessions : [];
+        const current = list.find(session => deviceId && session.DeviceId === deviceId) ||
+            list.find(session => session.UserId === userId && session.SupportsRemoteControl) ||
+            list.find(session => session.UserId === userId) ||
+            null;
+
+        debug('Current Jellyfin session lookup', {
+            found: Boolean(current),
+            sessionId: current?.Id || '',
+            deviceId,
+            sessions: list.map(session => ({
+                id: session.Id,
+                deviceId: session.DeviceId,
+                client: session.Client,
+                deviceName: session.DeviceName,
+                supportsRemoteControl: session.SupportsRemoteControl
+            }))
+        });
+
+        return current;
+    }
+
     function buildLookup(item) {
         const providerIds = item.ProviderIds || {};
         return {
@@ -439,6 +472,41 @@
         }
     }
 
+    async function trySessionPlaybackCommand(item, expectedMediaSourceId) {
+        if (!expectedMediaSourceId) {
+            return false;
+        }
+
+        try {
+            const session = await getCurrentSession();
+            if (!session?.Id) {
+                return false;
+            }
+
+            const query = new URLSearchParams({
+                ItemIds: item.Id || getItemId(),
+                PlayCommand: 'PlayNow',
+                MediaSourceId: expectedMediaSourceId,
+                StartPositionTicks: String(item.UserData?.PlaybackPositionTicks || 0)
+            });
+
+            debug('Sending Jellyfin PlayMediaSource command', {
+                sessionId: session.Id,
+                itemId: item.Id || getItemId(),
+                expectedMediaSourceId
+            });
+
+            await jellyfinFetch(`/Sessions/${encodeURIComponent(session.Id)}/Playing?${query.toString()}`, {
+                method: 'POST'
+            });
+
+            return true;
+        } catch (error) {
+            console.warn(debugPrefix, 'Jellyfin session playback command failed', error);
+            return false;
+        }
+    }
+
     function triggerNativePlayback(expectedMediaSourceId) {
         const playButton = findPlayButton();
         if (!playButton) {
@@ -516,6 +584,10 @@
 
         const item = await getItem(itemId);
         if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
+            return;
+        }
+
+        if (await trySessionPlaybackCommand(item, expectedMediaSourceId)) {
             return;
         }
 

@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.21",
-        "changelog": "Register the Streaming Sources provider with Jellyfin media source manager and expose the expected MediaSourceId for playback diagnostics.",
+        "version": "0.2.22",
+        "changelog": "Try explicit Jellyfin session playback with the selected Streaming Sources MediaSourceId before falling back to the native play button.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.21.zip",
-        "checksum": "9ce406b8414e05eb572fc48f1cccf0eb",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.22.zip",
+        "checksum": "79d0be3128799587608e4df3c8040ad9",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.21.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.22.zip"
       }
     ]
   }
