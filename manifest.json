@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.25",
-        "changelog": "Disable the Jellyfin remote session command fallback that treated MediaSourceId as an item id, and add server-side media source diagnostics.",
+        "version": "0.2.26",
+        "changelog": "Extend media source diagnostics with Jellyfin playback media sources for the current user.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.25.zip",
-        "checksum": "dadbf46156935b2be79c7e78c2bcb758",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.26.zip",
+        "checksum": "2fcd99b0bfc8ef53a8b02bbe48c53462",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.25.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.26.zip"
       }
     ]
   }

@@ -3,6 +3,7 @@ using Jellyfin.Plugin.StreamingSources.Debrid;
 using Jellyfin.Plugin.StreamingSources.ExternalApi;
 using Jellyfin.Plugin.StreamingSources.Models;
 using Jellyfin.Plugin.StreamingSources.Playback;
+using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,9 @@ public sealed class StreamingSourcesController : ControllerBase
     private readonly IDebridProvider _debridProvider;
     private readonly ISourceCache _sourceCache;
     private readonly StreamingSourcesMediaSourceProvider _mediaSourceProvider;
+    private readonly IMediaSourceManager _mediaSourceManager;
+    private readonly ILibraryManager _libraryManager;
+    private readonly IUserManager _userManager;
     private readonly ILogger<StreamingSourcesController> _logger;
 
     public StreamingSourcesController(
@@ -29,12 +33,18 @@ public sealed class StreamingSourcesController : ControllerBase
         IDebridProvider debridProvider,
         ISourceCache sourceCache,
         StreamingSourcesMediaSourceProvider mediaSourceProvider,
+        IMediaSourceManager mediaSourceManager,
+        ILibraryManager libraryManager,
+        IUserManager userManager,
         ILogger<StreamingSourcesController> logger)
     {
         _externalSourceClient = externalSourceClient;
         _debridProvider = debridProvider;
         _sourceCache = sourceCache;
         _mediaSourceProvider = mediaSourceProvider;
+        _mediaSourceManager = mediaSourceManager;
+        _libraryManager = libraryManager;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -123,18 +133,74 @@ public sealed class StreamingSourcesController : ControllerBase
     }
 
     [HttpGet("Debug/MediaSource/{jellyfinItemId}")]
-    public async Task<IActionResult> DebugMediaSourceAsync(string jellyfinItemId, CancellationToken cancellationToken)
+    public async Task<IActionResult> DebugMediaSourceAsync(
+        string jellyfinItemId,
+        [FromQuery] string? userId,
+        CancellationToken cancellationToken)
     {
         var cached = await _sourceCache.GetAsync(jellyfinItemId, cancellationToken).ConfigureAwait(false);
+        var expectedMediaSourceId = StreamingSourcesMediaSourceProvider.GetMediaSourceId(jellyfinItemId);
+        var playbackSources = new List<object>();
+        var playbackSourceError = string.Empty;
+        var playbackSourcesContainExpected = false;
+
+        try
+        {
+            if (Guid.TryParse(jellyfinItemId, out var itemGuid))
+            {
+                var item = _libraryManager.GetItemById(itemGuid);
+                var user = Guid.TryParse(userId, out var userGuid)
+                    ? _userManager.GetUserById(userGuid)
+                    : null;
+
+                if (item is not null && user is not null)
+                {
+                    var sources = await _mediaSourceManager
+                        .GetPlaybackMediaSources(item, user, true, true, cancellationToken)
+                        .ConfigureAwait(false);
+
+                    playbackSources.AddRange(sources.Select(source => new
+                    {
+                        source.Id,
+                        source.Name,
+                        source.Protocol,
+                        source.IsRemote,
+                        source.SupportsDirectPlay,
+                        source.SupportsDirectStream,
+                        source.SupportsTranscoding,
+                        HasPath = !string.IsNullOrWhiteSpace(source.Path),
+                        IsExpected = string.Equals(source.Id, expectedMediaSourceId, StringComparison.OrdinalIgnoreCase)
+                    }));
+                    playbackSourcesContainExpected = sources.Any(source =>
+                        string.Equals(source.Id, expectedMediaSourceId, StringComparison.OrdinalIgnoreCase));
+                }
+                else
+                {
+                    playbackSourceError = item is null ? "Item not found." : "User not found.";
+                }
+            }
+            else
+            {
+                playbackSourceError = "Invalid Jellyfin item id.";
+            }
+        }
+        catch (Exception ex)
+        {
+            playbackSourceError = ex.Message;
+        }
+
         return Ok(new
         {
             ItemId = jellyfinItemId,
-            ExpectedMediaSourceId = StreamingSourcesMediaSourceProvider.GetMediaSourceId(jellyfinItemId),
+            ExpectedMediaSourceId = expectedMediaSourceId,
             HasCachedSource = !string.IsNullOrWhiteSpace(cached?.StreamingUrl),
             cached?.Provider,
             cached?.TorrentHash,
             HasStreamingUrl = !string.IsNullOrWhiteSpace(cached?.StreamingUrl),
-            ProviderType = _mediaSourceProvider.GetType().FullName
+            ProviderType = _mediaSourceProvider.GetType().FullName,
+            PlaybackSourceError = playbackSourceError,
+            PlaybackSources = playbackSources,
+            PlaybackSourcesContainExpected = playbackSourcesContainExpected
         });
     }
 

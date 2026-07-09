@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.25';
+    const scriptVersion = '0.2.26';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -516,7 +516,10 @@
 
     async function logServerMediaSourceDiagnostic(itemId) {
         try {
-            const diagnostic = await jellyfinFetch(`/StreamingSources/Debug/MediaSource/${encodeURIComponent(itemId)}`, {
+            const client = apiClient();
+            const userId = client?.getCurrentUserId ? client.getCurrentUserId() : window.ApiClient?._serverInfo?.UserId;
+            const query = userId ? `?userId=${encodeURIComponent(userId)}` : '';
+            const diagnostic = await jellyfinFetch(`/StreamingSources/Debug/MediaSource/${encodeURIComponent(itemId)}${query}`, {
                 method: 'GET'
             });
             debug('Server media source diagnostic', diagnostic);
