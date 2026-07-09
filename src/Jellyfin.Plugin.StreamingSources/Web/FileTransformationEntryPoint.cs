@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Jellyfin.Plugin.StreamingSources.Web;
 
@@ -62,13 +63,13 @@ public sealed class FileTransformationEntryPoint : IHostedService
                 return true;
             }
 
-            var payload = new
+            var payload = new JObject
             {
-                id = Guid.Parse("6e2be09d-745f-4a25-bcb3-3ca2ab309454"),
-                fileNamePattern = "index.html",
-                callbackAssembly = typeof(WebIndexTransformer).Assembly.FullName,
-                callbackClass = typeof(WebIndexTransformer).FullName,
-                callbackMethod = nameof(WebIndexTransformer.InjectClientScript)
+                ["id"] = "6e2be09d-745f-4a25-bcb3-3ca2ab309454",
+                ["fileNamePattern"] = "index.html",
+                ["callbackAssembly"] = typeof(WebIndexTransformer).Assembly.FullName,
+                ["callbackClass"] = typeof(WebIndexTransformer).FullName,
+                ["callbackMethod"] = nameof(WebIndexTransformer.InjectClientScript)
             };
 
             registerMethod.Invoke(null, new object?[] { payload });
