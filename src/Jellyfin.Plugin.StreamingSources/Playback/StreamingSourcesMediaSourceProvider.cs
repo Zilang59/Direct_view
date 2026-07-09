@@ -8,7 +8,7 @@ namespace Jellyfin.Plugin.StreamingSources.Playback;
 
 public sealed class StreamingSourcesMediaSourceProvider : IMediaSourceProvider
 {
-    private const string SourcePrefix = "streaming-sources:";
+    private const string SourcePrefix = "streamingsources-";
     private readonly ISourceCache _sourceCache;
 
     public StreamingSourcesMediaSourceProvider(ISourceCache sourceCache)
@@ -28,6 +28,11 @@ public sealed class StreamingSourcesMediaSourceProvider : IMediaSourceProvider
         {
             BuildMediaSource(item, cached.StreamingUrl, cached.Provider)
         };
+    }
+
+    public static string GetMediaSourceId(string jellyfinItemId)
+    {
+        return SourcePrefix + jellyfinItemId.Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     public Task<ILiveStream> OpenMediaSource(

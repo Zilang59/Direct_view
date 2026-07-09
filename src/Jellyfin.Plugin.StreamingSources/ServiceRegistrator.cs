@@ -23,7 +23,9 @@ namespace Jellyfin.Plugin.StreamingSources;
         serviceCollection.AddHttpClient<IExternalSourceClient, ExternalSourceClient>();
         serviceCollection.AddHttpClient<AllDebridProvider>();
         serviceCollection.AddTransient<IDebridProvider>(provider => provider.GetRequiredService<AllDebridProvider>());
-        serviceCollection.AddSingleton<IMediaSourceProvider, StreamingSourcesMediaSourceProvider>();
+        serviceCollection.AddSingleton<StreamingSourcesMediaSourceProvider>();
+        serviceCollection.AddSingleton<IMediaSourceProvider>(provider => provider.GetRequiredService<StreamingSourcesMediaSourceProvider>());
+        serviceCollection.AddSingleton<IHostedService, StreamingSourcesMediaSourceRegistration>();
         serviceCollection.AddSingleton<IHostedService, FileTransformationEntryPoint>();
     }
 }

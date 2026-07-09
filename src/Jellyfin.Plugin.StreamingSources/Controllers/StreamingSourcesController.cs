@@ -2,6 +2,7 @@ using Jellyfin.Plugin.StreamingSources.Cache;
 using Jellyfin.Plugin.StreamingSources.Debrid;
 using Jellyfin.Plugin.StreamingSources.ExternalApi;
 using Jellyfin.Plugin.StreamingSources.Models;
+using Jellyfin.Plugin.StreamingSources.Playback;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -60,7 +61,7 @@ public sealed class StreamingSourcesController : ControllerBase
                 new CachedSource(request.JellyfinItemId, request.Source.Provider, request.Source.Hash, string.Empty, request.Source.DirectUrl, directNow, directNow),
                 cancellationToken).ConfigureAwait(false);
 
-            return Ok(new ResolvedSourceResponse(request.Source.DirectUrl, request.Source.Provider, request.Source.Hash, false));
+            return Ok(CreateResponse(request.JellyfinItemId, request.Source.DirectUrl, request.Source.Provider, request.Source.Hash, false));
         }
 
         if (string.IsNullOrWhiteSpace(request.Source.Magnet))
@@ -71,7 +72,7 @@ public sealed class StreamingSourcesController : ControllerBase
         var cached = await _sourceCache.GetAsync(request.JellyfinItemId, cancellationToken).ConfigureAwait(false);
         if (cached?.StreamingUrl is not null && !request.ForceRefresh)
         {
-            return Ok(new ResolvedSourceResponse(cached.StreamingUrl, cached.Provider, cached.TorrentHash, true));
+            return Ok(CreateResponse(request.JellyfinItemId, cached.StreamingUrl, cached.Provider, cached.TorrentHash, true));
         }
 
         var magnet = await _debridProvider.AddMagnetAsync(request.Source.Magnet, cancellationToken).ConfigureAwait(false);
@@ -93,7 +94,22 @@ public sealed class StreamingSourcesController : ControllerBase
             cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Resolved external source for Jellyfin item {JellyfinItemId} with provider {Provider}.", request.JellyfinItemId, _debridProvider.Name);
-        return Ok(new ResolvedSourceResponse(streamingUrl, _debridProvider.Name, request.Source.Hash, false));
+        return Ok(CreateResponse(request.JellyfinItemId, streamingUrl, _debridProvider.Name, request.Source.Hash, false));
+    }
+
+    private static ResolvedSourceResponse CreateResponse(
+        string jellyfinItemId,
+        string streamingUrl,
+        string provider,
+        string torrentHash,
+        bool fromCache)
+    {
+        return new ResolvedSourceResponse(
+            streamingUrl,
+            provider,
+            torrentHash,
+            fromCache,
+            StreamingSourcesMediaSourceProvider.GetMediaSourceId(jellyfinItemId));
     }
 
     [HttpDelete("Cache/{jellyfinItemId}")]

@@ -397,18 +397,19 @@
         });
     }
 
-    async function tryJellyfinPlayback(item, streamingUrl) {
+    async function tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId) {
         const playbackManager = window.PlaybackManager || window.playbackManager;
         debug('Playback globals', {
             hasPlaybackManager: Boolean(playbackManager),
-            playbackMethods: playbackManager ? Object.keys(playbackManager).filter(key => typeof playbackManager[key] === 'function') : []
+            playbackMethods: playbackManager ? Object.keys(playbackManager).filter(key => typeof playbackManager[key] === 'function') : [],
+            expectedMediaSourceId
         });
 
         if (!playbackManager || typeof playbackManager.play !== 'function') {
             return false;
         }
 
-        const mediaSourceId = `streaming-sources-${item.Id || getItemId()}`;
+        const mediaSourceId = expectedMediaSourceId || `streamingsources-${item.Id || getItemId()}`;
         const remoteItem = Object.assign({}, item, {
             MediaSources: [{
                 Id: mediaSourceId,
@@ -438,13 +439,16 @@
         }
     }
 
-    function triggerNativePlayback() {
+    function triggerNativePlayback(expectedMediaSourceId) {
         const playButton = findPlayButton();
         if (!playButton) {
             return false;
         }
 
-        debug('Triggering Jellyfin native play button');
+        debug('Triggering Jellyfin native play button', {
+            expectedMediaSourceId,
+            verify: 'The player URL should contain this MediaSourceId. If it contains the Jellyfin item id, Jellyfin selected the local file.'
+        });
         playButton.click();
         return true;
     }
@@ -502,12 +506,20 @@
             throw new Error('Aucune URL de streaming retournee.');
         }
 
+        const expectedMediaSourceId = response?.mediaSourceId || response?.MediaSourceId || '';
+        debug('Resolved source response', {
+            provider: response?.provider || response?.Provider,
+            fromCache: response?.fromCache ?? response?.FromCache,
+            expectedMediaSourceId,
+            hasStreamingUrl: Boolean(streamingUrl)
+        });
+
         const item = await getItem(itemId);
-        if (await tryJellyfinPlayback(item, streamingUrl)) {
+        if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
             return;
         }
 
-        if (triggerNativePlayback()) {
+        if (triggerNativePlayback(expectedMediaSourceId)) {
             return;
         }
 
