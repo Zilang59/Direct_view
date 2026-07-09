@@ -63,6 +63,14 @@
 
                     <div class="paperList" style="padding:1em;margin:1em 0;">
                         <h3>Integration du bouton Sources</h3>
+                        <label class="checkboxContainer">
+                            <input is="emby-checkbox" type="checkbox" id="EnableWebButtonInjection" />
+                            <span>Activer l'injection automatique via File Transformation</span>
+                        </label>
+                        <div class="fieldDescription">
+                            Desactive par defaut pour proteger Jellyfin Web. Activez uniquement apres avoir verifie que
+                            File Transformation fonctionne seul, puis redemarrez Jellyfin.
+                        </div>
                         <p>
                             Le plugin expose le script web suivant. Si votre installation Jellyfin ne charge pas automatiquement
                             les scripts de plugin dans les pages film/episode, injectez ce script dans votre web client Jellyfin :
@@ -89,6 +97,7 @@
                         document.querySelector('#EnableExternalApi').checked = config.EnableExternalApi !== false;
                         document.querySelector('#ExternalApiKey').value = config.ExternalApiKey || '';
                         document.querySelector('#EnableStremioAddons').checked = config.EnableStremioAddons !== false;
+                        document.querySelector('#EnableWebButtonInjection').checked = config.EnableWebButtonInjection === true;
                         document.querySelector('#StremioManifestUrls').value = config.StremioManifestUrls || '';
                         document.querySelector('#DebridProvider').value = config.DebridProvider || 'AllDebrid';
                         document.querySelector('#AllDebridApiKey').value = config.AllDebridApiKey || '';
@@ -111,6 +120,7 @@
                         config.EnableExternalApi = document.querySelector('#EnableExternalApi').checked;
                         config.ExternalApiKey = document.querySelector('#ExternalApiKey').value;
                         config.EnableStremioAddons = document.querySelector('#EnableStremioAddons').checked;
+                        config.EnableWebButtonInjection = document.querySelector('#EnableWebButtonInjection').checked;
                         config.StremioManifestUrls = document.querySelector('#StremioManifestUrls').value;
                         config.DebridProvider = document.querySelector('#DebridProvider').value;
                         config.AllDebridApiKey = document.querySelector('#AllDebridApiKey').value;

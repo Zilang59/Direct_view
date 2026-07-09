@@ -61,4 +61,10 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets a value indicating whether Stremio-compatible stream addons should be queried.
     /// </summary>
     public bool EnableStremioAddons { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the plugin should register a Jellyfin Web transformation.
+    /// Disabled by default because a broken web transformation can make Jellyfin Web unavailable.
+    /// </summary>
+    public bool EnableWebButtonInjection { get; set; }
 }

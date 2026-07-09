@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.5",
-        "changelog": "Return raw transformed HTML string from the File Transformation callback.",
+        "version": "0.2.6",
+        "changelog": "Disable Jellyfin Web injection by default and add an explicit safety toggle.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.5.zip",
-        "checksum": "6fbb18e4cc06949154f42888729a7907",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.6.zip",
+        "checksum": "f18657004452dd5234c29c97fb674595",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.5.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.6.zip"
       }
     ]
   }

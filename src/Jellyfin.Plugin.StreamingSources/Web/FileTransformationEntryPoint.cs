@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.Loader;
+using Jellyfin.Plugin.StreamingSources.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -20,6 +21,13 @@ public sealed class FileTransformationEntryPoint : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        PluginConfiguration? configuration = Plugin.Instance?.Configuration;
+        if (configuration?.EnableWebButtonInjection != true)
+        {
+            _logger.LogInformation("Streaming Sources web button injection is disabled. Skipping File Transformation registration.");
+            return;
+        }
+
         for (int attempt = 1; attempt <= 10; attempt++)
         {
             if (TryRegisterTransformation())
