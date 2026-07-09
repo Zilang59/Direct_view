@@ -1,0 +1,76 @@
+# Build outputs
+bin/
+obj/
+out/
+artifacts/
+dist/
+publish/
+*.nupkg
+*.snupkg
+
+# .NET / NuGet
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+packages/
+.nuget/
+TestResults/
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+# IDEs and editors
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs and diagnostics
+*.log
+logs/
+*.trace
+*.dmp
+
+# Local configuration and secrets
+appsettings.Local.json
+appsettings.Development.json
+appsettings.*.local.json
+*.local.json
+*.secrets.json
+secrets.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+
+# Jellyfin plugin local/runtime files
+config/
+data/
+cache/
+metadata/
+transcodes/
+plugins/*/config/
+plugins/*/data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*.orig
