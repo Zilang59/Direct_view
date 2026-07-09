@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.26';
+    const scriptVersion = '0.2.27';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -19,6 +19,21 @@
 
     function apiClient() {
         return window.ApiClient || window.ConnectionManager?.currentApiClient?.();
+    }
+
+    function getFunctionNames(object) {
+        const names = new Set();
+        let current = object;
+        while (current && current !== Object.prototype) {
+            Object.getOwnPropertyNames(current).forEach(name => {
+                if (typeof object[name] === 'function') {
+                    names.add(name);
+                }
+            });
+            current = Object.getPrototypeOf(current);
+        }
+
+        return Array.from(names).sort();
     }
 
     function getItemId() {
@@ -523,9 +538,25 @@
                 method: 'GET'
             });
             debug('Server media source diagnostic', diagnostic);
+            console.debug(`${debugPrefix} Server media source diagnostic JSON`, JSON.stringify(diagnostic));
         } catch (error) {
             console.warn(debugPrefix, 'Server media source diagnostic failed', error);
         }
+    }
+
+    function logApiClientPlaybackCapabilities() {
+        const client = apiClient();
+        const clientMethods = client ? getFunctionNames(client)
+            .filter(name => /play|playback|media|stream|session/i.test(name)) : [];
+        const windowPlaybackKeys = Object.keys(window)
+            .filter(name => /playback|player|playqueue|media/i.test(name))
+            .sort()
+            .slice(0, 80);
+
+        debug('Jellyfin playback capability scan', {
+            apiClientMethods: clientMethods,
+            windowPlaybackKeys
+        });
     }
 
     function triggerNativePlayback(expectedMediaSourceId) {
@@ -605,6 +636,7 @@
 
         const item = await getItem(itemId);
         await logServerMediaSourceDiagnostic(itemId);
+        logApiClientPlaybackCapabilities();
 
         if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
             return;

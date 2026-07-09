@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.26",
-        "changelog": "Extend media source diagnostics with Jellyfin playback media sources for the current user.",
+        "version": "0.2.27",
+        "changelog": "Log full media source diagnostics and Jellyfin web playback capabilities without Chrome object truncation.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.26.zip",
-        "checksum": "2fcd99b0bfc8ef53a8b02bbe48c53462",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.27.zip",
+        "checksum": "077dbc8847b215344d4879425b364ca9",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.26.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.27.zip"
       }
     ]
   }
