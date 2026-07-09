@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.24';
+    const scriptVersion = '0.2.25';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -474,6 +474,12 @@
     }
 
     async function trySessionPlaybackCommand(item, expectedMediaSourceId) {
+        debug('Skipping Jellyfin remote session command', {
+            reason: 'Jellyfin Web treats the selected MediaSourceId as an item id in this context.',
+            expectedMediaSourceId
+        });
+        return false;
+
         if (!expectedMediaSourceId) {
             return false;
         }
@@ -505,6 +511,17 @@
         } catch (error) {
             console.warn(debugPrefix, 'Jellyfin session playback command failed', error);
             return false;
+        }
+    }
+
+    async function logServerMediaSourceDiagnostic(itemId) {
+        try {
+            const diagnostic = await jellyfinFetch(`/StreamingSources/Debug/MediaSource/${encodeURIComponent(itemId)}`, {
+                method: 'GET'
+            });
+            debug('Server media source diagnostic', diagnostic);
+        } catch (error) {
+            console.warn(debugPrefix, 'Server media source diagnostic failed', error);
         }
     }
 
@@ -584,15 +601,13 @@
         });
 
         const item = await getItem(itemId);
+        await logServerMediaSourceDiagnostic(itemId);
+
         if (await tryJellyfinPlayback(item, streamingUrl, expectedMediaSourceId)) {
             return;
         }
 
         if (await trySessionPlaybackCommand(item, expectedMediaSourceId)) {
-            return;
-        }
-
-        if (triggerNativePlayback(expectedMediaSourceId)) {
             return;
         }
 

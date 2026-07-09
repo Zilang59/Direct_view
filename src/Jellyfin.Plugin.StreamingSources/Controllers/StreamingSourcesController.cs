@@ -21,17 +21,20 @@ public sealed class StreamingSourcesController : ControllerBase
     private readonly IExternalSourceClient _externalSourceClient;
     private readonly IDebridProvider _debridProvider;
     private readonly ISourceCache _sourceCache;
+    private readonly StreamingSourcesMediaSourceProvider _mediaSourceProvider;
     private readonly ILogger<StreamingSourcesController> _logger;
 
     public StreamingSourcesController(
         IExternalSourceClient externalSourceClient,
         IDebridProvider debridProvider,
         ISourceCache sourceCache,
+        StreamingSourcesMediaSourceProvider mediaSourceProvider,
         ILogger<StreamingSourcesController> logger)
     {
         _externalSourceClient = externalSourceClient;
         _debridProvider = debridProvider;
         _sourceCache = sourceCache;
+        _mediaSourceProvider = mediaSourceProvider;
         _logger = logger;
     }
 
@@ -117,6 +120,22 @@ public sealed class StreamingSourcesController : ControllerBase
     {
         await _sourceCache.RemoveAsync(jellyfinItemId, cancellationToken).ConfigureAwait(false);
         return NoContent();
+    }
+
+    [HttpGet("Debug/MediaSource/{jellyfinItemId}")]
+    public async Task<IActionResult> DebugMediaSourceAsync(string jellyfinItemId, CancellationToken cancellationToken)
+    {
+        var cached = await _sourceCache.GetAsync(jellyfinItemId, cancellationToken).ConfigureAwait(false);
+        return Ok(new
+        {
+            ItemId = jellyfinItemId,
+            ExpectedMediaSourceId = StreamingSourcesMediaSourceProvider.GetMediaSourceId(jellyfinItemId),
+            HasCachedSource = !string.IsNullOrWhiteSpace(cached?.StreamingUrl),
+            cached?.Provider,
+            cached?.TorrentHash,
+            HasStreamingUrl = !string.IsNullOrWhiteSpace(cached?.StreamingUrl),
+            ProviderType = _mediaSourceProvider.GetType().FullName
+        });
     }
 
     [HttpGet("Web/streamingSources.js")]

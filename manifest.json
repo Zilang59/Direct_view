@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.24",
-        "changelog": "Bust Jellyfin web client cache by injecting a versioned script URL and serving the client script with no-store headers.",
+        "version": "0.2.25",
+        "changelog": "Disable the Jellyfin remote session command fallback that treated MediaSourceId as an item id, and add server-side media source diagnostics.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.24.zip",
-        "checksum": "a9c25087428bee6271669a89aa8e04e6",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.25.zip",
+        "checksum": "dadbf46156935b2be79c7e78c2bcb758",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.24.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.25.zip"
       }
     ]
   }
