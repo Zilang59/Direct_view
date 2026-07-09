@@ -430,18 +430,18 @@
         const title = document.createElement('div');
         title.textContent = item.Name || item.SeriesName || 'Streaming Sources';
 
-        const close = jellyfinButton('Fermer', 'emby-button');
-        close.addEventListener('click', () => {
-            video.pause();
-            player.remove();
-        });
-
         const video = document.createElement('video');
         video.className = 'streaming-sources-video';
         video.src = streamingUrl;
         video.controls = true;
         video.autoplay = true;
         video.playsInline = true;
+
+        const close = jellyfinButton('Fermer', 'emby-button');
+        close.addEventListener('click', () => {
+            video.pause();
+            player.remove();
+        });
 
         bar.append(title, close);
         player.append(bar, video);
@@ -567,36 +567,41 @@
     }
 
     function injectButton() {
-        if (!isDetailPage()) {
-            document.getElementById(buttonId)?.remove();
-            return;
-        }
+        try {
+            if (!isDetailPage()) {
+                document.getElementById(buttonId)?.remove();
+                return;
+            }
 
-        if (document.getElementById(buttonId)) {
-            return;
-        }
+            if (document.getElementById(buttonId)) {
+                return;
+            }
 
-        const container = findButtonContainer();
-        if (!container) {
-            return;
-        }
+            const playButton = findPlayButton();
+            const container = findButtonContainer() || document.body;
+            const className = container === document.body
+                ? 'raised button-submit emby-button streaming-sources-button streaming-sources-floating-button'
+                : 'raised button-submit emby-button streaming-sources-button';
 
-        const playButton = findPlayButton();
-        const className = container === document.body
-            ? 'raised button-submit emby-button streaming-sources-button streaming-sources-floating-button'
-            : 'raised button-submit emby-button streaming-sources-button';
+            const button = container === document.body
+                ? jellyfinButton('Sources', className)
+                : jellyfinIconButton('source', 'Sources');
 
-        const button = container === document.body
-            ? jellyfinButton('Sources', className)
-            : jellyfinIconButton('source', 'Sources');
+            button.id = buttonId;
+            button.addEventListener('click', onSourcesClick);
 
-        button.id = buttonId;
-        button.addEventListener('click', onSourcesClick);
+            if (playButton?.parentElement === container) {
+                playButton.insertAdjacentElement('afterend', button);
+            } else {
+                container.appendChild(button);
+            }
 
-        if (playButton?.parentElement === container) {
-            playButton.insertAdjacentElement('afterend', button);
-        } else {
-            container.appendChild(button);
+            debug('Sources button injected', {
+                fallback: container === document.body,
+                href: window.location.href
+            });
+        } catch (error) {
+            console.error(debugPrefix, 'Failed to inject Sources button', error);
         }
     }
 
