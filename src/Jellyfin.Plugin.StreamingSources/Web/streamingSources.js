@@ -4,7 +4,17 @@
     const buttonId = 'streamingSourcesButton';
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
+    const debugPrefix = '[Streaming Sources]';
     let lastUrl = '';
+
+    function debug(message, data) {
+        if (data === undefined) {
+            console.debug(debugPrefix, message);
+            return;
+        }
+
+        console.debug(debugPrefix, message, data);
+    }
 
     function apiClient() {
         return window.ApiClient || window.ConnectionManager?.currentApiClient?.();
@@ -33,7 +43,22 @@
                 margin-left: .5em;
             }
             .streaming-sources-icon-button {
-                min-width: 3.2em;
+                width: auto;
+                min-width: 0;
+                height: auto;
+                margin: 0 .35em;
+                padding: .65em;
+                border: 0;
+                border-radius: 50%;
+                background: transparent !important;
+                box-shadow: none !important;
+                color: inherit;
+                opacity: .9;
+            }
+            .streaming-sources-icon-button:hover,
+            .streaming-sources-icon-button:focus {
+                background: rgba(255,255,255,.12) !important;
+                opacity: 1;
             }
             .streaming-sources-icon-button .material-icons,
             .streaming-sources-icon-button .material-icons-round {
@@ -115,10 +140,10 @@
     function jellyfinIconButton(icon, label) {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'emby-button detailButton streaming-sources-button streaming-sources-icon-button';
+        button.className = 'emby-button detailButton autoSize paper-icon-button-light streaming-sources-button streaming-sources-icon-button';
         button.title = label;
         button.setAttribute('aria-label', label);
-        button.innerHTML = `<span class="material-icons" aria-hidden="true">${icon}</span>`;
+        button.innerHTML = `<span class="material-icons-round material-icons" aria-hidden="true">${icon}</span>`;
         return button;
     }
 
@@ -162,6 +187,8 @@
     }
 
     function normalizeSourcesResponse(response) {
+        debug('Raw search response', response);
+
         if (!response) {
             return [];
         }
@@ -178,17 +205,32 @@
             return response;
         }
 
-        for (const key of ['sources', 'Sources', 'items', 'Items', 'results', 'Results', 'streams', 'Streams']) {
+        for (const key of ['sources', 'Sources', 'items', 'Items', 'results', 'Results', 'streams', 'Streams', 'data', 'Data', '$values']) {
             if (Array.isArray(response[key])) {
+                debug(`Using response.${key}`, response[key]);
                 return response[key];
             }
+        }
+
+        for (const key of ['result', 'Result', 'value', 'Value', 'payload', 'Payload']) {
+            if (response[key]) {
+                return normalizeSourcesResponse(response[key]);
+            }
+        }
+
+        const values = Object.values(response);
+        if (values.length > 0 && values.every(value => value && typeof value === 'object')) {
+            debug('Using object values as source list', values);
+            return values;
         }
 
         if (response.source || response.Source || response.name || response.Name) {
             return [response.source || response.Source || response];
         }
 
-        throw new Error('Format de reponse sources inattendu.');
+        const keys = Object.keys(response).join(', ') || 'aucune cle';
+        console.warn(debugPrefix, 'Unexpected search response shape', response);
+        throw new Error(`Format de reponse sources inattendu. Cles recues: ${keys}`);
     }
 
     async function jellyfinFetch(path, options) {
@@ -383,6 +425,7 @@
             showMessage('Sources', 'Recherche des sources...');
             const item = await getItem(itemId);
             const lookup = buildLookup(item);
+            debug('Lookup request', lookup);
             const sources = await jellyfinFetch('/StreamingSources/Search', {
                 method: 'POST',
                 body: lookup
