@@ -4,7 +4,7 @@ Plugin Jellyfin visant a proposer des sources de streaming externes pour les med
 
 L'objectif est de garder l'utilisateur dans l'interface Jellyfin : recherche de source, choix du torrent, mise en cache Debrid, puis lecture immediate dans le lecteur Jellyfin.
 
-> Statut du projet : base de conception / debut de repository. Le code du plugin n'est pas encore present dans ce depot. Ce README sert de specification initiale, de guide d'architecture et de base pour les futures contributions.
+> Statut du projet : premiere base technique. Le depot contient un squelette de plugin Jellyfin 10.11.x / .NET 9, une page de configuration, les modeles principaux, un client API externe, une interface Debrid, une premiere implementation AllDebrid et des endpoints backend internes. L'integration complete du bouton `Sources` dans l'interface de lecture Jellyfin reste a implementer.
 
 ## Fonctionnement vise
 
@@ -13,14 +13,17 @@ L'objectif est de garder l'utilisateur dans l'interface Jellyfin : recherche de 
 Si Jellyfin possede deja le fichier dans sa bibliotheque, le comportement standard reste inchange :
 
 - bouton `Lecture`
+- bouton `Sources`
 - reprise de lecture
 - sous-titres
 - pistes audio
 - historique et progression Jellyfin
 
+Le bouton `Sources` reste disponible afin de permettre a l'utilisateur de choisir une source externe meme si un fichier local existe deja.
+
 ### Media absent localement
 
-Si le media n'est pas disponible localement, le plugin devra afficher une action supplementaire :
+Si le media n'est pas disponible localement, le plugin utilisera le meme bouton :
 
 - `Sources`
 - ou `Trouver une source`
@@ -32,14 +35,15 @@ Le plugin ne doit pas implementer la recherche torrent lui-meme.
 ## Parcours utilisateur
 
 1. L'utilisateur ouvre un film ou un episode dans Jellyfin.
-2. Si le media est local, Jellyfin lance la lecture normalement.
-3. Si le media est absent, l'utilisateur clique sur `Sources`.
-4. Le plugin affiche les resultats disponibles.
-5. L'utilisateur choisit une source.
-6. Le plugin envoie le magnet au fournisseur Debrid.
-7. Le fournisseur Debrid retourne un lien HTTP streamable.
-8. Jellyfin lance la lecture.
-9. Le choix est mis en cache pour les lectures suivantes.
+2. Jellyfin affiche toujours le bouton `Sources`, que le fichier local existe ou non.
+3. Si le media est local, le bouton `Lecture` reste disponible et conserve le comportement natif.
+4. L'utilisateur clique sur `Sources` lorsqu'il veut chercher une source externe.
+5. Le plugin affiche les resultats disponibles.
+6. L'utilisateur choisit une source.
+7. Le plugin envoie le magnet au fournisseur Debrid.
+8. Le fournisseur Debrid retourne un lien HTTP streamable.
+9. Jellyfin lance la lecture.
+10. Le choix est mis en cache pour les lectures suivantes.
 
 ## Exemple de sources retournees
 
@@ -203,27 +207,77 @@ Pour un depot public, utilisez des valeurs factices dans les exemples :
 }
 ```
 
-## Installation
+## Installation developpement
 
-Le plugin n'est pas encore publiable en l'etat, car le code Jellyfin n'est pas present dans ce repository.
+Le plugin cible Jellyfin 10.11.x et .NET 9.
 
-Une fois le plugin implemente, l'installation devrait suivre le flux classique des plugins Jellyfin :
-
-1. Compiler le plugin en mode release.
-2. Copier le dossier ou l'archive du plugin dans le repertoire des plugins Jellyfin.
-3. Redemarrer Jellyfin.
-4. Ouvrir `Tableau de bord > Plugins`.
-5. Configurer l'URL de l'API externe et les cles API.
-6. Tester une recherche sur un media absent.
-
-Exemple de commande de build attendue pour un plugin .NET :
+Compiler le plugin :
 
 ```powershell
 dotnet restore
-dotnet build -c Release
+dotnet build Jellyfin.Plugin.StreamingSources.sln -c Release
 ```
 
-Le chemin exact de sortie dependra de la structure finale du projet.
+Copier ensuite les fichiers generes dans un dossier de plugin Jellyfin, par exemple sous Windows :
+
+```powershell
+$pluginDir = "$env:LOCALAPPDATA\jellyfin\plugins\StreamingSources"
+New-Item -ItemType Directory -Force -Path $pluginDir
+Copy-Item ".\src\Jellyfin.Plugin.StreamingSources\bin\Release\net9.0\Jellyfin.Plugin.StreamingSources.dll" $pluginDir -Force
+Copy-Item ".\src\Jellyfin.Plugin.StreamingSources\bin\Release\net9.0\Jellyfin.Plugin.StreamingSources.pdb" $pluginDir -Force
+```
+
+Redemarrer Jellyfin apres la copie.
+
+## Configuration
+
+Dans Jellyfin :
+
+1. Ouvrir `Tableau de bord > Plugins`.
+2. Ouvrir `Streaming Sources`.
+3. Renseigner `URL API externe`.
+4. Renseigner `Cle API externe` si votre API en demande une.
+5. Selectionner `AllDebrid`.
+6. Renseigner `Cle API AllDebrid`.
+7. Ajuster `Timeout`, `Taille maximale`, `Nombre maximal de resultats` et `Tri par defaut`.
+8. Enregistrer puis redemarrer Jellyfin si necessaire.
+
+Pour le moment, le client API externe appelle l'endpoint suivant :
+
+```text
+POST {ExternalApiUrl}/sources/search
+```
+
+Le corps envoye correspond au modele `MediaLookupRequest`.
+
+La reponse attendue est un tableau JSON de sources :
+
+```json
+[
+  {
+    "name": "1080p WEB-DL VF",
+    "sizeBytes": 8500000000,
+    "seeders": 120,
+    "language": "VF",
+    "quality": "1080p",
+    "codec": "x265",
+    "isHdr": false,
+    "isDolbyVision": false,
+    "hash": "TORRENT_HASH",
+    "magnet": "magnet:?xt=urn:btih:..."
+  }
+]
+```
+
+## Endpoints backend internes
+
+Endpoints exposes par le plugin :
+
+- `POST /StreamingSources/Search` : recherche les sources via l'API externe.
+- `POST /StreamingSources/Resolve` : envoie le magnet au fournisseur Debrid, recupere une URL de streaming et met la source en cache.
+- `DELETE /StreamingSources/Cache/{jellyfinItemId}` : supprime le cache d'un media.
+
+Ces endpoints sont proteges par l'authentification Jellyfin.
 
 ## Utilisation
 
@@ -231,13 +285,15 @@ Flux attendu apres installation :
 
 1. Ouvrir Jellyfin.
 2. Aller sur un film ou un episode.
-3. Si le media est local, cliquer sur `Lecture`.
-4. Si le media est absent, cliquer sur `Sources`.
+3. Cliquer sur `Lecture` pour utiliser le fichier local si disponible.
+4. Cliquer sur `Sources` pour chercher une source externe, que le fichier local existe ou non.
 5. Choisir une source selon qualite, langue, taille et seeders.
 6. Attendre la mise en cache Debrid.
 7. La lecture demarre automatiquement.
 
 Lors des lectures suivantes, le plugin devra reutiliser la source mise en cache.
+
+Etat actuel : la partie backend est initialisee et compilable. Le bouton `Sources` dans les pages film/episode et le lancement direct dans le player Jellyfin restent les prochaines etapes.
 
 ## Developpement
 

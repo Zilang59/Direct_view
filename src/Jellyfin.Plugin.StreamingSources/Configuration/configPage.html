@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Streaming Sources</title>
+</head>
+<body>
+    <div id="StreamingSourcesConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="StreamingSourcesConfigForm">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">Streaming Sources</h2>
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="url" id="ExternalApiUrl" label="URL API externe" />
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="password" id="ExternalApiKey" label="Cle API externe" />
+                    </div>
+
+                    <div class="selectContainer">
+                        <select is="emby-select" id="DebridProvider" label="Fournisseur Debrid">
+                            <option value="AllDebrid">AllDebrid</option>
+                        </select>
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="password" id="AllDebridApiKey" label="Cle API AllDebrid" />
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="TimeoutSeconds" label="Timeout en secondes" min="1" />
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="MaxSizeGb" label="Taille maximale en Go (0 = desactive)" min="0" />
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="MaxResults" label="Nombre maximal de resultats" min="1" />
+                    </div>
+
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="DefaultSort" label="Tri par defaut" />
+                    </div>
+
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>Enregistrer</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var StreamingSourcesConfig = {
+                pluginUniqueId: '6d4d9c8a-6468-4e47-8db4-33a21c0d5fc3'
+            };
+
+            document.querySelector('#StreamingSourcesConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(StreamingSourcesConfig.pluginUniqueId).then(function (config) {
+                        document.querySelector('#ExternalApiUrl').value = config.ExternalApiUrl || '';
+                        document.querySelector('#ExternalApiKey').value = config.ExternalApiKey || '';
+                        document.querySelector('#DebridProvider').value = config.DebridProvider || 'AllDebrid';
+                        document.querySelector('#AllDebridApiKey').value = config.AllDebridApiKey || '';
+                        document.querySelector('#TimeoutSeconds').value = config.TimeoutSeconds || 30;
+                        document.querySelector('#MaxSizeGb').value = config.MaxSizeGb || 0;
+                        document.querySelector('#MaxResults').value = config.MaxResults || 25;
+                        document.querySelector('#DefaultSort').value = config.DefaultSort || 'quality';
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('#StreamingSourcesConfigForm')
+                .addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(StreamingSourcesConfig.pluginUniqueId).then(function (config) {
+                        config.ExternalApiUrl = document.querySelector('#ExternalApiUrl').value;
+                        config.ExternalApiKey = document.querySelector('#ExternalApiKey').value;
+                        config.DebridProvider = document.querySelector('#DebridProvider').value;
+                        config.AllDebridApiKey = document.querySelector('#AllDebridApiKey').value;
+                        config.TimeoutSeconds = parseInt(document.querySelector('#TimeoutSeconds').value || '30', 10);
+                        config.MaxSizeGb = parseInt(document.querySelector('#MaxSizeGb').value || '0', 10);
+                        config.MaxResults = parseInt(document.querySelector('#MaxResults').value || '25', 10);
+                        config.DefaultSort = document.querySelector('#DefaultSort').value || 'quality';
+
+                        ApiClient.updatePluginConfiguration(StreamingSourcesConfig.pluginUniqueId, config).then(function () {
+                            Dashboard.processPluginConfigurationUpdateResult();
+                        });
+                    });
+                });
+        </script>
+    </div>
+</body>
+</html>
