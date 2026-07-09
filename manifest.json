@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.10",
-        "changelog": "Allow File Transformation to match Jellyfin index.html paths while still avoiding JavaScript chunks.",
+        "version": "0.2.11",
+        "changelog": "Use a safer broad index.html match for File Transformation while keeping the HTML content guard.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.10.zip",
-        "checksum": "23625c84ee6f6515c1e4b1c3ddc39690",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.11.zip",
+        "checksum": "725b4b7ef29d2394236c52e85a708ed3",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.10.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.11.zip"
       }
     ]
   }
