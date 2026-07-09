@@ -183,7 +183,7 @@ dotnet build -c Release
 Creer un package :
 
 ```powershell
-.\build\package.ps1 -Version 0.2.30
+.\build\package.ps1 -Version 0.2.31
 ```
 
 Les zips de test sont publies dans `packages/` parce que le manifest Jellyfin pointe dessus.

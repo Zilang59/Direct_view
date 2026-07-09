@@ -5,7 +5,7 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.30';
+    const scriptVersion = '0.2.31';
     let lastUrl = '';
 
     function debug(message, data) {
@@ -565,7 +565,8 @@
                 });
             }
 
-            return true;
+            debug('Jellyfin PlayMediaSource command was accepted, continuing to fallback because Jellyfin Web does not open the player for this command.');
+            return false;
         } catch (error) {
             console.warn(debugPrefix, 'Jellyfin PlayMediaSource general command failed', error);
             return false;
