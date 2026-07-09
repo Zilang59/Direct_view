@@ -46,6 +46,15 @@
                         <input is="emby-input" type="text" id="DefaultSort" label="Tri par defaut" />
                     </div>
 
+                    <div class="paperList" style="padding:1em;margin:1em 0;">
+                        <h3>Integration du bouton Sources</h3>
+                        <p>
+                            Le plugin expose le script web suivant. Si votre installation Jellyfin ne charge pas automatiquement
+                            les scripts de plugin dans les pages film/episode, injectez ce script dans votre web client Jellyfin :
+                        </p>
+                        <pre style="white-space:pre-wrap;"><code id="ClientScriptUrl"></code></pre>
+                    </div>
+
                     <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>Enregistrer</span>
                     </button>
@@ -69,6 +78,7 @@
                         document.querySelector('#MaxSizeGb').value = config.MaxSizeGb || 0;
                         document.querySelector('#MaxResults').value = config.MaxResults || 25;
                         document.querySelector('#DefaultSort').value = config.DefaultSort || 'quality';
+                        document.querySelector('#ClientScriptUrl').textContent = ApiClient.getUrl('/StreamingSources/Web/streamingSources.js');
                         Dashboard.hideLoadingMsg();
                     });
                 });

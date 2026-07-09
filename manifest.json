@@ -1,0 +1,23 @@
+[
+  {
+    "guid": "6d4d9c8a-6468-4e47-8db4-33a21c0d5fc3",
+    "name": "Streaming Sources",
+    "description": "Find and play external Debrid streaming sources from Jellyfin.",
+    "overview": "Adds Streaming Sources backend services and web UI helpers for Jellyfin.",
+    "owner": "Zilang",
+    "category": "General",
+    "versions": [
+      {
+        "version": "0.1.0",
+        "changelog": "Initial development build for Jellyfin 10.11.x / .NET 9.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/Zilang59/Direct_view",
+        "checksum": "7104f14db237cd70bf5484619dcfc1c6313bc6ba998049c73455db5be2fabd71",
+        "timestamp": "2026-07-09T00:00:00Z",
+        "repositoryName": "Direct_view",
+        "repositoryUrl": "https://github.com/Zilang59/Direct_view",
+        "packageUrl": "https://github.com/Zilang59/Direct_view/releases/download/v0.1.0/Jellyfin.Plugin.StreamingSources-0.1.0.zip"
+      }
+    ]
+  }
+]

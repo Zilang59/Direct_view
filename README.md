@@ -295,6 +295,34 @@ Lors des lectures suivantes, le plugin devra reutiliser la source mise en cache.
 
 Etat actuel : la partie backend est initialisee et compilable. Le bouton `Sources` dans les pages film/episode et le lancement direct dans le player Jellyfin restent les prochaines etapes.
 
+### Bouton Sources
+
+Le depot contient un script web embarque :
+
+```text
+/StreamingSources/Web/streamingSources.js
+```
+
+Ce script ajoute un bouton `Sources` sur les pages de detail film/episode, appelle le backend du plugin, affiche les sources disponibles, puis lance l'URL Debrid resolue.
+
+Limite actuelle : Jellyfin ne fournit pas d'API officielle stable permettant a un plugin serveur d'injecter automatiquement du JavaScript dans toutes les pages du web client. Le plugin expose donc le script, et l'URL exacte est affichee dans la page de configuration. Selon votre installation Jellyfin, il faudra soit utiliser un mecanisme d'injection de script du web client, soit modifier le web client, soit utiliser une extension dediee a l'injection JavaScript.
+
+## Packaging
+
+Generer un ZIP installable :
+
+```powershell
+.\build\package.ps1 -Version 0.1.0
+```
+
+Le ZIP est genere dans :
+
+```text
+artifacts/Jellyfin.Plugin.StreamingSources-0.1.0.zip
+```
+
+Le fichier `manifest.json` sert de base pour un depot de plugins Jellyfin. Pour une installation par URL de repository dans Jellyfin, il faut publier le ZIP dans une release GitHub et verifier que `packageUrl` et `checksum` correspondent exactement au fichier publie.
+
 ## Developpement
 
 Structure cible possible :

@@ -5,6 +5,7 @@ using Jellyfin.Plugin.StreamingSources.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace Jellyfin.Plugin.StreamingSources.Controllers;
 
@@ -90,5 +91,22 @@ public sealed class StreamingSourcesController : ControllerBase
     {
         await _sourceCache.RemoveAsync(jellyfinItemId, cancellationToken).ConfigureAwait(false);
         return NoContent();
+    }
+
+    [HttpGet("Web/streamingSources.js")]
+    [AllowAnonymous]
+    public IActionResult GetClientScript()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        const string resourceName = "Jellyfin.Plugin.StreamingSources.Web.streamingSources.js";
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            return NotFound();
+        }
+
+        using var reader = new StreamReader(stream);
+        return Content(reader.ReadToEnd(), "application/javascript");
     }
 }
