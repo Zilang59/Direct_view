@@ -5,8 +5,10 @@
     const dialogId = 'streamingSourcesDialog';
     const styleId = 'streamingSourcesStyle';
     const debugPrefix = '[Streaming Sources]';
-    const scriptVersion = '0.2.32';
+    const scriptVersion = '0.2.33';
     let lastUrl = '';
+    const itemTypeCache = new Map();
+    const itemTypeRequests = new Map();
 
     function debug(message, data) {
         if (data === undefined) {
@@ -45,6 +47,11 @@
 
     function isDetailPage() {
         return Boolean(getItemId()) && /details|itemdetails|item/i.test(window.location.href);
+    }
+
+    function isSupportedSourceItem(item) {
+        const type = item?.Type || item?.type || '';
+        return type === 'Movie' || type === 'Episode';
     }
 
     function ensureStyles() {
@@ -1037,6 +1044,11 @@
 
             showMessage('Sources', 'Recherche des sources...');
             const item = await getItem(itemId);
+            if (!isSupportedSourceItem(item)) {
+                showMessage('Sources', 'Ouvre un film ou un episode precis pour rechercher des sources.');
+                return;
+            }
+
             const lookup = buildLookup(item);
             debug('Lookup request', lookup);
             const sources = await jellyfinFetch('/StreamingSources/Search', {
@@ -1050,10 +1062,62 @@
         }
     }
 
+    function shouldInjectForCurrentItem(itemId) {
+        if (!itemId) {
+            return false;
+        }
+
+        const cached = itemTypeCache.get(itemId);
+        if (cached !== undefined) {
+            if (!cached) {
+                document.getElementById(buttonId)?.remove();
+            }
+
+            return cached;
+        }
+
+        if (!itemTypeRequests.has(itemId)) {
+            document.getElementById(buttonId)?.remove();
+            const request = getItem(itemId)
+                .then(item => {
+                    const supported = isSupportedSourceItem(item);
+                    itemTypeCache.set(itemId, supported);
+                    itemTypeRequests.delete(itemId);
+                    debug('Sources button item type check', {
+                        itemId,
+                        type: item?.Type || item?.type || '',
+                        supported
+                    });
+
+                    if (getItemId() === itemId) {
+                        if (supported) {
+                            injectButton();
+                        } else {
+                            document.getElementById(buttonId)?.remove();
+                        }
+                    }
+                })
+                .catch(error => {
+                    itemTypeRequests.delete(itemId);
+                    itemTypeCache.set(itemId, false);
+                    console.warn(debugPrefix, 'Failed to check item type for Sources button', error);
+                });
+
+            itemTypeRequests.set(itemId, request);
+        }
+
+        return false;
+    }
+
     function injectButton() {
         try {
             if (!isDetailPage()) {
                 document.getElementById(buttonId)?.remove();
+                return;
+            }
+
+            const itemId = getItemId();
+            if (!shouldInjectForCurrentItem(itemId)) {
                 return;
             }
 

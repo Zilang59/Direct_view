@@ -8,15 +8,15 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.32",
-        "changelog": "Add custom VOD controls for the Jellyfin transcoded fallback, including duration display and seek via StartTimeTicks.",
+        "version": "0.2.33",
+        "changelog": "Show the Sources button only on movies and individual episodes, not on series or season pages.",
         "targetAbi": "10.11.10.0",
-        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.32.zip",
-        "checksum": "0065ddad16d9def9dd48fe35634de8f9",
+        "sourceUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.33.zip",
+        "checksum": "a34b4e8f3caca053c62fab4dc6837624",
         "timestamp": "2026-07-09T00:00:00Z",
         "repositoryName": "Direct_view",
         "repositoryUrl": "https://github.com/Zilang59/Direct_view",
-        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.32.zip"
+        "packageUrl": "https://raw.githubusercontent.com/Zilang59/Direct_view/main/packages/Jellyfin.Plugin.StreamingSources-0.2.33.zip"
       }
     ]
   }
